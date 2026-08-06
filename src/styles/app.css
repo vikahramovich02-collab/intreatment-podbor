@@ -866,6 +866,10 @@ button {
 .rec__about {
   max-width: 550px;
 }
+.rec__about--second {
+  margin-top: -6px;
+  color: var(--ink-soft);
+}
 .rec__meta {
   display: flex;
   flex-wrap: wrap;

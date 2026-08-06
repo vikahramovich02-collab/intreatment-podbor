@@ -79,9 +79,8 @@ export default function RecommendationCard({ match, onOpen, time }) {
       <VideoCircle person={person} />
       {person.video && <p className="rec__videohint">Видео-визитка · 30 секунд</p>}
 
-      <p className="msg__body rec__about">
-        {quoted(person.quote)} {person.about}
-      </p>
+      <p className="msg__body rec__about">{quoted(person.quote)}</p>
+      <p className="msg__body rec__about rec__about--second">{person.about}</p>
 
       <div className="rec__meta">
         <span className="pill-meta">{money(person.price)} • 50 минут</span>
