@@ -1,0 +1,67 @@
+/* InTreatment — дизайн-токены.
+   Взяты с боевого сайта (intreatment: цвета и шрифты) и экранов подбора в Figma. */
+
+:root {
+  /* Чернила и текст (прозрачности — как в макете подбора) */
+  --ink: #2d2c2a;
+  --ink-87: rgba(37, 36, 35, 0.87);
+  --ink-80: rgba(37, 36, 35, 0.8);
+  --ink-soft: rgba(37, 36, 35, 0.6);
+  --muted: rgba(37, 36, 35, 0.6);
+  --ghost: rgba(37, 36, 35, 0.4);
+
+  /* Поверхности */
+  --paper: #ffffff;
+  --paper-soft: #faf9f7;
+  --surface: #f5f4f1;
+  --surface-strong: #efece7;
+
+  /* Линии */
+  --line: #ece9e3;
+  --line-strong: #ded9d1;
+  --hairline: rgba(0, 0, 0, 0.14); /* поля и варианты ответа */
+  --card-line: rgba(0, 0, 0, 0.09); /* карточка психолога */
+  --chip-line: rgba(18, 16, 16, 0.2);
+
+  /* Кнопки */
+  --btn-quiet: #efefef;
+  --btn-primary: #181616;
+  --meta-bg: #f6f6f5;
+  --picked-bg: #f7f7f7;
+
+  /* Пастельные акценты сайта */
+  --beige: #efe9e3;
+  --lilac: #e7e4ee;
+  --mint: #e2e9e9;
+
+  /* Радиусы (из макета: кнопки и поля — 10, карточки — 16) */
+  --r-xs: 6px;
+  --r-sm: 8px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  /* Типографика */
+  --font-display: "Playfair Display", "Times New Roman", serif;
+  --font-ui: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Раскладка */
+  --header-h: clamp(56px, 4.25vw, 78px); /* совпадает с шапкой сайта */
+  --column: 864px;
+  --gutter: 24px;
+
+  /* Тени */
+  --shadow-card: 0 1px 2px rgba(45, 44, 42, 0.04);
+  --shadow-pop: 0 24px 60px rgba(45, 44, 42, 0.18);
+  --shadow-lift: 0 8px 24px rgba(45, 44, 42, 0.08);
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (max-width: 900px) {
+  :root {
+    --gutter: 16px;
+    --header-h: 54px;
+  }
+}
