@@ -2,8 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  // Прототип живёт в подпапке GitHub Pages рядом с сайтом
-  base: "/intreatment-podbor/",
+  // Относительные пути: работает и локально, и в подпапке GitHub Pages
+  base: "./",
   plugins: [react()],
   server: { port: 5180, host: true },
 });

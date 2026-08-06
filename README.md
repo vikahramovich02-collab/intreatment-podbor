@@ -11,6 +11,8 @@ Helvetica Neue в интерфейсе, чернила `#2d2c2a`, без цве�
 от ширины экрана (`clamp` c `vw`), поэтому кнопки в ней мельче, чем в теле экрана.
 Модалки оформлены как диалог «Оставить заявку» на сайте: прямые углы, воздух, заголовок Playfair капсом.
 
+**Живой прототип:** https://vikahramovich02-collab.github.io/intreatment-podbor/
+
 ## Запуск
 
 ```bash
@@ -19,6 +21,17 @@ npm run dev      # http://localhost:5180
 npm run build    # прод-сборка в dist/
 npm run preview  # посмотреть прод-сборку
 ```
+
+## Деплой
+
+```bash
+bash deploy.sh
+```
+
+Собирает `dist` и заливает его в ветку `gh-pages` репозитория
+`vikahramovich02-collab/intreatment-podbor`. Pages пересобирается 1–2 минуты.
+`base` в `vite.config.js` — относительный (`./`), поэтому одна и та же сборка
+работает и локально, и в подпапке Pages.
 
 ## Структура
 
