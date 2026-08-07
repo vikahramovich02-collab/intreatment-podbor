@@ -2,7 +2,7 @@ import { forwardRef } from "react";
 import { Mark } from "./icons.jsx";
 
 export const AssistantMessage = forwardRef(function AssistantMessage(
-  { text, time, children, typing = false },
+  { text, time, children, signature, typing = false },
   ref
 ) {
   return (
@@ -11,10 +11,7 @@ export const AssistantMessage = forwardRef(function AssistantMessage(
         <span className="msg__head-avatar">
           <Mark />
         </span>
-        <span>
-          <b className="msg__head-name">Ассистент</b>
-          <span className="msg__head-role">ИИ-помощник InTreatment</span>
-        </span>
+        <b className="msg__head-name">InTreatment</b>
       </div>
       {typing ? (
         <span className="typing" aria-label="Ассистент печатает">
@@ -26,6 +23,7 @@ export const AssistantMessage = forwardRef(function AssistantMessage(
         <>
           <p className="msg__body">{text}</p>
           {children}
+          {signature && <p className="msg__sign">{signature}</p>}
           {time && <time className="msg__time">{time}</time>}
         </>
       )}

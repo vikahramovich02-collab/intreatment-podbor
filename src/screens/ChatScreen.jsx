@@ -44,6 +44,9 @@ const titleFromText = (text) => {
 
 const NEW_TOPIC = { label: "Обсудить другую тему", newTopic: true };
 
+/* Ответ на свободный текст подписываем живым человеком */
+const DUTY = { signature: "Дежурный психолог Дарья" };
+
 export default function ChatScreen({ onBook, onLogin, onCrisis }) {
   const [messages, setMessages] = useState([
     { role: "assistant", text: GREETING, time: now(), topicId: null },
@@ -123,7 +126,8 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
     lead,
     forTopic = topicId,
     allSoft = softTags,
-    ranges = budget
+    ranges = budget,
+    extra = {}
   ) => {
     const ranked = rankSpecialists(allTags, allSoft, ranges);
     setMatches(ranked);
@@ -144,6 +148,7 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
           text: lead || withName("Вот кто может подойти под ваш запрос."),
           time: now(),
           topicId: forTopic,
+          ...extra,
         },
         { role: "rec", match: ranked[index], topicId: forTopic },
       ]);
@@ -151,15 +156,15 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
     timers.current.push(timer);
   };
 
-  const goTo = (nextId, allTags) => {
+  const goTo = (nextId, allTags, extra = {}) => {
     if (!nextId) {
-      showMatch(allTags);
+      showMatch(allTags, 0, undefined, topicId, softTags, budget, extra);
       return;
     }
     const next = stepById(nextId);
     setStepId(nextId);
     setPhase("flow");
-    say(withName(next.prompt), { topicId });
+    say(withName(next.prompt), { topicId, ...extra });
   };
 
   /* Новая тема разговора */
@@ -245,7 +250,15 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
     if (phase === "matched") {
       const allTags = [...tags, ...tagsFromText(value)];
       setTags(allTags);
-      showMatch(allTags, 0, withName("Поняла. Тогда посмотрите на этот вариант."));
+      showMatch(
+        allTags,
+        0,
+        withName("Поняла. Тогда посмотрите на этот вариант."),
+        topicId,
+        softTags,
+        budget,
+        DUTY
+      );
       return;
     }
 
@@ -266,11 +279,11 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
       const next = stepById(step.freeTextNext || step.next);
       setStepId(next.id);
       setPhase("flow");
-      say(withName(next.prompt), { topicId: id });
+      say(withName(next.prompt), { topicId: id, ...DUTY });
       return;
     }
 
-    goTo(step.freeTextNext || step.next, allTags);
+    goTo(step.freeTextNext || step.next, allTags, DUTY);
   };
 
   const refine = (option, snapshot) => {
@@ -416,6 +429,7 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
                     ref={setNode}
                     text={message.text}
                     time={message.time}
+                    signature={message.signature}
                   />
                 );
               }
