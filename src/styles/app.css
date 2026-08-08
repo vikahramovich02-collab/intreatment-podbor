@@ -269,6 +269,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 7px;
+  min-width: 0;
 }
 .field > span {
   font-size: 13px;
@@ -277,6 +278,8 @@ button {
 .field input,
 .field select,
 .field textarea {
+  width: 100%;
+  min-width: 0;
   height: 52px;
   padding: 0 16px;
   border: 1px solid var(--hairline);
@@ -1638,7 +1641,7 @@ button {
 
 .field-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
 }
 .field-stack {
