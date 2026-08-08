@@ -26,7 +26,7 @@ export default function HelpModal({ onClose, focus = "list" }) {
     };
   }, []);
 
-  /* Из пункта «Продукты» открываем сразу на каталоге */
+  /* Из пункта «Самопомощь» открываем сразу на каталоге */
   useEffect(() => {
     if (focus === "products") {
       productsRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });

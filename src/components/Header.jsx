@@ -59,7 +59,7 @@ export default function Header({ onBack, backLabel = "Назад", step, onLogin
               <span className="is-narrow">Помощь</span>
             </button>
             <button className="is-wide-only" type="button" onClick={() => onHelp("products")}>
-              Продукты
+              Самопомощь
             </button>
           </nav>
         ) : (
