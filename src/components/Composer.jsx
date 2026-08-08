@@ -61,9 +61,7 @@ export default function Composer({
   return (
     <div className="composer">
       <div className="column composer__inner">
-        {(hint || options.length > 0) && (
-          <p className="composer__label">{hint || "Выберите вариант ответа или напишите"}</p>
-        )}
+        {hint && <p className="composer__label">{hint}</p>}
 
         {options.length > 0 && (
           <div

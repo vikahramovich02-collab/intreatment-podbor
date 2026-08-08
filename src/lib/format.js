@@ -1,23 +1,14 @@
 export const money = (value) => `${value.toLocaleString("ru-RU")} ₽`;
 
-/* Часовые пояса клиентов. Расписание психологов хранится в минском времени (UTC+3). */
+/* Часовые пояса клиентов. Расписание психологов хранится в минском времени (UTC+3).
+   Город не спрашиваем — достаточно смещения. */
 export const BASE_UTC = 3;
-export const ZONES = [
-  { id: "minsk", label: "Минск, Беларусь", utc: 3 },
-  { id: "moscow", label: "Москва, Россия", utc: 3 },
-  { id: "kaliningrad", label: "Калининград, Россия", utc: 2 },
-  { id: "tbilisi", label: "Тбилиси, Грузия", utc: 4 },
-  { id: "yerevan", label: "Ереван, Армения", utc: 4 },
-  { id: "almaty", label: "Алматы, Казахстан", utc: 5 },
-  { id: "belgrade", label: "Белград, Сербия", utc: 2 },
-  { id: "berlin", label: "Берлин, Германия", utc: 2 },
-  { id: "lisbon", label: "Лиссабон, Португалия", utc: 1 },
-  { id: "newyork", label: "Нью-Йорк, США", utc: -4 },
-  { id: "bali", label: "Бали, Индонезия", utc: 8 },
-];
+export const ZONES = Array.from({ length: 13 }, (_, index) => {
+  const utc = index - 4; // от UTC−4 до UTC+8
+  return { id: `utc${utc}`, utc };
+});
 
-export const zoneLabel = (zone) =>
-  `${zone.label} (UTC${zone.utc >= 0 ? "+" : ""}${zone.utc})`;
+export const zoneLabel = (zone) => `UTC${zone.utc >= 0 ? "+" : ""}${zone.utc}`;
 
 /* Сдвигаем время слота в пояс клиента. Слоты, уехавшие за пределы суток,
    в прототипе не показываем — иначе поедет и дата. */
@@ -88,12 +79,11 @@ export function weekRange(days) {
   return `${fromLabel}–${to.getDate()} ${MONTHS[to.getMonth()]}`;
 }
 
-/* «сегодня, 18:30» / «завтра, 11:00» / «5 августа, 11:00» */
+/* «сегодня» / «завтра» / «пн, 10 августа» — время выбирается уже в расписании */
 export function nearestSlotLabel(person) {
   const days = buildCalendar(person, 2);
   const day = days.find((item) => item.slots.length);
   if (!day) return null;
   const index = days.indexOf(day);
-  const when = index === 0 ? "сегодня" : index === 1 ? "завтра" : day.label.toLowerCase();
-  return `${when}, ${day.slots[0]}`;
+  return index === 0 ? "сегодня" : index === 1 ? "завтра" : day.label.toLowerCase();
 }

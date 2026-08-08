@@ -91,8 +91,7 @@ export default function ProfileModal({ match, matchedTags = [], onClose, onChoos
   const nearest = (() => {
     const index = days.findIndex((day) => day.slots.length);
     if (index < 0) return null;
-    const when = index === 0 ? "сегодня" : index === 1 ? "завтра" : days[index].label.toLowerCase();
-    return `${when}, ${days[index].slots[0]}`;
+    return index === 0 ? "сегодня" : index === 1 ? "завтра" : days[index].label.toLowerCase();
   })();
 
   return (
@@ -234,14 +233,14 @@ export default function ProfileModal({ match, matchedTags = [], onClose, onChoos
               </div>
               <div className="cal__tz">
                 <span>
-                  Ваше время: {zoneLabel(zone)} — определили автоматически.{" "}
+                  Мы автоматически определили ваш часовой пояс — {zoneLabel(zone)}.{" "}
                   <button className="link" type="button" onClick={() => setZoneOpen((v) => !v)}>
                     {zoneOpen ? "Свернуть" : "Изменить"}
                   </button>
                 </span>
                 {zoneOpen && (
                   <label className="checkout__select cal__tz-select">
-                    <span className="sr-only">Ваш город</span>
+                    <span className="sr-only">Ваш часовой пояс</span>
                     <select
                       value={zone.id}
                       onChange={(event) => {
