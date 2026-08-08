@@ -693,6 +693,58 @@ button {
   text-decoration-color: var(--ink);
 }
 
+/* Согласие на обработку данных: пустой чекбокс, отмечает сам клиент */
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+.consent input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.consent__box {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin-top: 1px;
+  border: 0.8px solid rgba(0, 0, 0, 0.35);
+  border-radius: 2.4px;
+  color: transparent;
+}
+.consent input:checked + .consent__box {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.consent input:focus-visible + .consent__box {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.consent__box svg {
+  width: 11px;
+  height: 11px;
+}
+.consent__text {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+.consent__text a {
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line-strong);
+}
+.consent__text a:hover {
+  color: var(--ink);
+  text-decoration-color: var(--ink);
+}
+
 .composer__skip {
   align-self: flex-start;
   font-size: 13px;

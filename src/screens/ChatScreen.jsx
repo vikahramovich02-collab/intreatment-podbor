@@ -62,6 +62,9 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
   const [modal, setModal] = useState(null); // { match, focus }
   const [helpOpen, setHelpOpen] = useState(false);
   const [draft, setDraft] = useState(null); // текст, возвращённый в поле при редактировании
+  /* 152-ФЗ: согласие даётся осознанно — галочка не проставлена заранее
+     и без неё чат не начинается */
+  const [consent, setConsent] = useState(false);
 
   /* Темы: у клиента редко один запрос. Каждая новая тема — своя ветка
      со своими метками и своим подобранным специалистом. */
@@ -394,7 +397,9 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
           onPick={pickOption}
           onPickMany={pickMany}
           onText={sendText}
-          legal={step?.id === "name"}
+          consent={
+            consent ? null : { checked: consent, onChange: setConsent }
+          }
         />
       </div>
 

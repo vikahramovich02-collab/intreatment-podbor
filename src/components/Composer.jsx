@@ -9,7 +9,7 @@ export default function Composer({
   placeholder = "Расскажите..",
   disabled = false,
   draft = null,
-  legal = false,
+  consent = null, // { checked, onChange } — согласие на обработку данных
   onPick,
   onPickMany,
   onText,
@@ -33,11 +33,12 @@ export default function Composer({
       prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]
     );
 
+  const blocked = disabled || (consent && !consent.checked);
   const canSend = Boolean(text.trim()) || (mode === "multi" && checked.length > 0);
 
   const submit = (event) => {
     event.preventDefault();
-    if (disabled || !canSend) return;
+    if (blocked || !canSend) return;
     // Если что-то отмечено — отправляем выбор, иначе свободный текст
     if (mode === "multi" && checked.length) {
       onPickMany(checked);
@@ -69,7 +70,7 @@ export default function Composer({
                   key={option.label}
                   type="button"
                   className={`option ${isChecked ? "is-checked" : ""}`.trim()}
-                  disabled={disabled}
+                  disabled={blocked}
                   aria-pressed={mode === "multi" ? isChecked : undefined}
                   onClick={() => (mode === "multi" ? toggle(option.label) : onPick(option))}
                 >
@@ -101,7 +102,7 @@ export default function Composer({
           <button
             className="composer__skip"
             type="button"
-            disabled={disabled}
+            disabled={blocked}
             onClick={() => onPickMany([])}
           >
             Ничего из этого
@@ -116,22 +117,33 @@ export default function Composer({
             id="composer-text"
             value={text}
             placeholder={placeholder}
-            disabled={disabled}
+            disabled={blocked}
             autoComplete="off"
             onChange={(event) => setText(event.target.value)}
           />
-          <button className="btn btn--quiet" type="submit" disabled={disabled || !canSend}>
+          <button className="btn btn--quiet" type="submit" disabled={blocked || !canSend}>
             <Mark />
             {mode === "multi" && checked.length ? submitLabel : "Отправить"}
           </button>
         </form>
 
-        {legal && (
-          <p className="composer__legal">
-            Продолжая, вы соглашаетесь с <a href="#terms">условиями сервиса</a> и{" "}
-            <a href="#privacy">политикой конфиденциальности</a>, включая обработку ответов для
-            подбора специалиста.
-          </p>
+        {consent && (
+          <label className="consent">
+            <input
+              type="checkbox"
+              checked={consent.checked}
+              onChange={(event) => consent.onChange(event.target.checked)}
+            />
+            <span className="consent__box" aria-hidden="true">
+              <CheckIcon />
+            </span>
+            <span className="consent__text">
+              Даю согласие на обработку персональных данных, включая сведения о моём самочувствии,
+              для подбора специалиста — на условиях{" "}
+              <a href="#privacy">политики конфиденциальности</a> и{" "}
+              <a href="#terms">условий сервиса</a>.
+            </span>
+          </label>
         )}
       </div>
     </div>
