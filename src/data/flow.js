@@ -106,6 +106,14 @@ export const flow = [
     submitLabel: "Продолжить",
     next: null,
   },
+  {
+    id: "own_words",
+    kind: "text",
+    prompt: "Расскажите тогда своими словами: что сейчас происходит?",
+    options: [],
+    placeholder: "Расскажите..",
+    next: null,
+  },
 ];
 
 export const stepById = (id) => flow.find((step) => step.id === id);

@@ -207,7 +207,8 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
     const picked = step.options.filter((option) => labels.includes(option.label));
     const allTags = [...tags, ...picked.flatMap((option) => option.tags || [])];
     setTags(allTags);
-    goTo(step.next, allTags);
+    // Ничего не отметили — просим рассказать своими словами
+    goTo(labels.length ? step.next : "own_words", allTags);
   };
 
   const sendText = (value) => {
@@ -329,7 +330,10 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
           hint: "Можно посмотреть другого специалиста, начать новую тему или написать своими словами",
         }
       : {
-          options: step?.options || [],
+          options:
+            step?.kind === "multi"
+              ? [...step.options, { label: "Ничего из этого", none: true }]
+              : step?.options || [],
           mode: step?.kind === "multi" ? "multi" : "single",
           hint: step?.hint,
           submitLabel: step?.submitLabel,

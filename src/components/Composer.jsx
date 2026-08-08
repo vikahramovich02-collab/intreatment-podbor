@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Mark, CheckIcon } from "./icons.jsx";
 
+const NONE_LABEL = "Ничего из этого";
+
 export default function Composer({
   options = [],
   mode = "single",
@@ -28,10 +30,15 @@ export default function Composer({
     setChecked([]);
   }, [options.map((option) => option.label).join("|")]);
 
-  const toggle = (label) =>
-    setChecked((prev) =>
-      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]
-    );
+  /* «Ничего из этого» — взаимоисключающий пункт: снимает остальные и снимается сам */
+  const toggle = (option) => {
+    const { label, none } = option;
+    setChecked((prev) => {
+      if (prev.includes(label)) return prev.filter((item) => item !== label);
+      if (none) return [label];
+      return [...prev.filter((item) => item !== NONE_LABEL), label];
+    });
+  };
 
   const blocked = disabled || (consent && !consent.checked);
   const canSend = Boolean(text.trim()) || (mode === "multi" && checked.length > 0);
@@ -41,7 +48,7 @@ export default function Composer({
     if (blocked || !canSend) return;
     // Если что-то отмечено — отправляем выбор, иначе свободный текст
     if (mode === "multi" && checked.length) {
-      onPickMany(checked);
+      onPickMany(checked.filter((label) => label !== NONE_LABEL));
       setChecked([]);
       setText("");
       return;
@@ -72,7 +79,7 @@ export default function Composer({
                   className={`option ${isChecked ? "is-checked" : ""}`.trim()}
                   disabled={blocked}
                   aria-pressed={mode === "multi" ? isChecked : undefined}
-                  onClick={() => (mode === "multi" ? toggle(option.label) : onPick(option))}
+                  onClick={() => (mode === "multi" ? toggle(option) : onPick(option))}
                 >
                   {mode === "multi" && (
                     <span className="option__box" aria-hidden="true">
@@ -96,17 +103,6 @@ export default function Composer({
               );
             })}
           </div>
-        )}
-
-        {mode === "multi" && (
-          <button
-            className="composer__skip"
-            type="button"
-            disabled={blocked}
-            onClick={() => onPickMany([])}
-          >
-            Ничего из этого
-          </button>
         )}
 
         <form className="composer__input" onSubmit={submit}>
