@@ -220,6 +220,17 @@ button {
   white-space: nowrap;
 }
 
+/* Кликабельная плашка — ведёт в расписание */
+.pill-meta--action {
+  cursor: pointer;
+  transition: background 0.16s var(--ease), color 0.16s var(--ease);
+}
+.pill-meta--action:hover {
+  background: var(--btn-quiet);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .avatar {
   display: grid;
   place-items: center;
@@ -663,6 +674,23 @@ button {
   font-size: 13px;
   line-height: 1.35;
   color: var(--ghost);
+}
+
+/* Условия сервиса — показываем на старте, до сбора данных */
+.composer__legal {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ghost);
+}
+.composer__legal a {
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line-strong);
+}
+.composer__legal a:hover {
+  color: var(--ink);
+  text-decoration-color: var(--ink);
 }
 
 .composer__skip {
@@ -1147,6 +1175,25 @@ button {
 .slots__empty {
   font-size: 14px;
   color: var(--ink-soft);
+}
+
+.cal__tz {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--ghost);
+}
+.cal__tz .link {
+  font-size: 13px;
+}
+.cal__tz-select {
+  max-width: 320px;
+}
+.cal__tz-select select {
+  height: 44px;
+  font-size: 14px;
 }
 
 .modal__footer {

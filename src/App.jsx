@@ -31,6 +31,7 @@ export default function App() {
       <RegisterScreen
         booking={booking}
         holdStartedAt={holdStartedAt}
+        onStep={(id) => id === "chat" && setScreen("chat")}
         onBack={() => setScreen("chat")}
         onDone={(user) => {
           setAccount(user);

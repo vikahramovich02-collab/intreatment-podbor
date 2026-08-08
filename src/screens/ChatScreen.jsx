@@ -7,11 +7,11 @@ import HelpModal from "../components/HelpModal.jsx";
 import TopicsPanel from "../components/TopicsPanel.jsx";
 import { AssistantMessage, UserMessage } from "../components/Message.jsx";
 import { flow, stepById, refineOptions, crisisPattern } from "../data/flow.js";
-import { rankSpecialists, countInBudget } from "../data/specialists.js";
+import { rankSpecialists } from "../data/specialists.js";
 import { now } from "../lib/format.js";
 
 const GREETING =
-  "Здравствуйте! Я ИИ-помощник InTreatment.\n\nПомогу подобрать специалиста, с которым будет спокойно начать. Это займёт около 3 минут — можно выбирать варианты или писать своими словами.";
+  "Здравствуйте!\n\nПомогу подобрать специалиста, с которым будет спокойно начать. Это займёт около 3 минут — можно выбирать варианты или писать своими словами.";
 
 /* Свободный текст тоже участвует в подборе: ищем в нём знакомые темы. */
 const KEYWORDS = [
@@ -55,8 +55,6 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
   const [phase, setPhase] = useState("flow"); // flow → matched
   const [stepId, setStepId] = useState("name");
   const [tags, setTags] = useState([]);
-  const [softTags, setSoftTags] = useState([]); // предпочтение по формату поддержки
-  const [budget, setBudget] = useState([]); // выбранные диапазоны стоимости
   const [name, setName] = useState("");
   const [typing, setTyping] = useState(false);
   const [matches, setMatches] = useState([]);
@@ -109,8 +107,6 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
   const snapshotNow = () => ({
     stepId,
     tags,
-    softTags,
-    budget,
     phase,
     topicId,
     topics,
@@ -120,16 +116,8 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
   const withName = (text) => (name ? `${name}, ${text[0].toLowerCase()}${text.slice(1)}` : text);
 
   /* ── Подбор ── */
-  const showMatch = (
-    allTags,
-    index = 0,
-    lead,
-    forTopic = topicId,
-    allSoft = softTags,
-    ranges = budget,
-    extra = {}
-  ) => {
-    const ranked = rankSpecialists(allTags, allSoft, ranges);
+  const showMatch = (allTags, index = 0, lead, forTopic = topicId, extra = {}) => {
+    const ranked = rankSpecialists(allTags);
     setMatches(ranked);
     setMatchIndex(index);
     setPhase("matched");
@@ -158,7 +146,7 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
 
   const goTo = (nextId, allTags, extra = {}) => {
     if (!nextId) {
-      showMatch(allTags, 0, undefined, topicId, softTags, budget, extra);
+      showMatch(allTags, 0, undefined, topicId, extra);
       return;
     }
     const next = stepById(nextId);
@@ -190,24 +178,6 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
     }
 
     hear(option.label, snapshot);
-
-    if (step.budget) {
-      const ranges = option.range ? [option.range] : [];
-      setBudget(ranges);
-      goTo(step.next, tags);
-      return;
-    }
-
-    if (step.soft) {
-      const allSoft = [...softTags, ...(option.tags || [])];
-      setSoftTags(allSoft);
-      if (!step.next) {
-        showMatch(tags, 0, undefined, topicId, allSoft);
-        return;
-      }
-      goTo(step.next, tags);
-      return;
-    }
 
     const allTags = [...tags, ...(option.tags || [])];
     setTags(allTags);
@@ -250,15 +220,7 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
     if (phase === "matched") {
       const allTags = [...tags, ...tagsFromText(value)];
       setTags(allTags);
-      showMatch(
-        allTags,
-        0,
-        withName("Поняла. Тогда посмотрите на этот вариант."),
-        topicId,
-        softTags,
-        budget,
-        DUTY
-      );
+      showMatch(allTags, 0, withName("Поняла. Тогда посмотрите на этот вариант."), topicId, DUTY);
       return;
     }
 
@@ -291,8 +253,6 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
 
     if (option.newTopic) {
       setTags([]);
-      setSoftTags([]);
-      setBudget([]);
       setStepId("topic");
       setPhase("flow");
       say(withName(stepById("topic").prompt), { topicId: null });
@@ -315,27 +275,7 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
       timers.current.push(timer);
       return;
     }
-    if (option.cheaper) {
-      const cheapest = [...matches].sort((a, b) => a.person.price - b.person.price)[0];
-      setBudget([[0, cheapest.person.price]]);
-      setMatches([cheapest, ...matches.filter((item) => item !== cheapest)]);
-      setMatchIndex(0);
-      setTopics((prev) =>
-        prev.map((topic) =>
-          topic.id === topicId ? { ...topic, personName: cheapest.person.name } : topic
-        )
-      );
-      say("Вот специалист с наиболее доступной стоимостью сессии.", { topicId });
-      const timer = setTimeout(
-        () => setMessages((prev) => [...prev, { role: "rec", match: cheapest, topicId }]),
-        700
-      );
-      timers.current.push(timer);
-      return;
-    }
-    const allSoft = [...softTags, ...(option.tags || [])];
-    setSoftTags(allSoft);
-    showMatch(tags, 0, withName("Поняла. Уточнила подбор."), topicId, allSoft);
+    showMatch(tags, 0, withName("Поняла. Уточнила подбор."));
   };
 
   /* ── Редактирование ответа ──
@@ -349,8 +289,6 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
     setMessages(messages.slice(0, index));
     setStepId(message.snapshot.stepId);
     setTags(message.snapshot.tags);
-    setSoftTags(message.snapshot.softTags);
-    setBudget(message.snapshot.budget || []);
     setPhase(message.snapshot.phase);
     setTopicId(message.snapshot.topicId);
     setTopics(message.snapshot.topics);
@@ -385,15 +323,10 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
       ? {
           options: [...refineOptions, NEW_TOPIC],
           mode: "single",
-          hint: "Можно уточнить подбор, начать новую тему или написать своими словами",
+          hint: "Можно посмотреть другого специалиста, начать новую тему или написать своими словами",
         }
       : {
-          options: step?.budget
-            ? step.options.map((option) => ({
-                ...option,
-                count: option.range ? `${countInBudget(option.range)} специалистов` : null,
-              }))
-            : step?.options || [],
+          options: step?.options || [],
           mode: step?.kind === "multi" ? "multi" : "single",
           hint: step?.hint,
           submitLabel: step?.submitLabel,
@@ -461,6 +394,7 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
           onPick={pickOption}
           onPickMany={pickMany}
           onText={sendText}
+          legal={step?.id === "name"}
         />
       </div>
 

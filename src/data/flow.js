@@ -111,13 +111,8 @@ export const flow = [
 
 export const stepById = (id) => flow.find((step) => step.id === id);
 
-/* Уточнение подбора после первой рекомендации */
-export const refineOptions = [
-  { label: "Больше поддержки и бережности", tags: ["опора", "безопасность"] },
-  { label: "Более структурный подход", tags: ["прокрастинация", "перемены"] },
-  { label: "Важно, чтобы было дешевле", cheaper: true },
-  { label: "Показать другого специалиста", nextPerson: true },
-];
+/* Что можно сделать после показанной карточки */
+export const refineOptions = [{ label: "Показать другого специалиста", nextPerson: true }];
 
 /* Слова-маркеры, при которых показываем экран безопасности */
 export const crisisPattern =

@@ -1,5 +1,34 @@
 export const money = (value) => `${value.toLocaleString("ru-RU")} ₽`;
 
+/* Часовые пояса клиентов. Расписание психологов хранится в минском времени (UTC+3). */
+export const BASE_UTC = 3;
+export const ZONES = [
+  { id: "minsk", label: "Минск, Беларусь", utc: 3 },
+  { id: "moscow", label: "Москва, Россия", utc: 3 },
+  { id: "kaliningrad", label: "Калининград, Россия", utc: 2 },
+  { id: "tbilisi", label: "Тбилиси, Грузия", utc: 4 },
+  { id: "yerevan", label: "Ереван, Армения", utc: 4 },
+  { id: "almaty", label: "Алматы, Казахстан", utc: 5 },
+  { id: "belgrade", label: "Белград, Сербия", utc: 2 },
+  { id: "berlin", label: "Берлин, Германия", utc: 2 },
+  { id: "lisbon", label: "Лиссабон, Португалия", utc: 1 },
+  { id: "newyork", label: "Нью-Йорк, США", utc: -4 },
+  { id: "bali", label: "Бали, Индонезия", utc: 8 },
+];
+
+export const zoneLabel = (zone) =>
+  `${zone.label} (UTC${zone.utc >= 0 ? "+" : ""}${zone.utc})`;
+
+/* Сдвигаем время слота в пояс клиента. Слоты, уехавшие за пределы суток,
+   в прототипе не показываем — иначе поедет и дата. */
+export function shiftSlot(time, utc) {
+  const delta = utc - BASE_UTC;
+  const [h, m] = time.split(":").map(Number);
+  const shifted = h + delta;
+  if (shifted < 0 || shifted > 23) return null;
+  return `${String(shifted).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
 /* Оборачиваем в кавычки, если внутри уже нет своих — иначе получается «…»» */
 export const quoted = (text) => (text.includes("«") ? text : `«${text}»`);
 

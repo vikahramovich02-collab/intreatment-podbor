@@ -122,30 +122,14 @@ export const specialists = [
 
 export const byId = (id) => specialists.find((item) => item.id === id);
 
-/* Совпадение = сколько меток специалиста встретилось в ответах.
-   Метки темы весят полную единицу, предпочтение по формату поддержки — меньше:
-   человека ищем прежде всего под запрос, а не под стиль. */
-const SOFT_WEIGHT = 0.35;
-
-/* Попадает ли цена хотя бы в один выбранный диапазон */
-export const inBudget = (price, ranges = []) =>
-  !ranges.length || ranges.some(([min, max]) => price >= min && price <= max);
-
-export const countInBudget = (range) =>
-  specialists.filter((person) => inBudget(person.price, [range])).length;
-
-export function rankSpecialists(tags, softTags = [], ranges = []) {
+/* Совпадение = сколько меток специалиста встретилось в ответах клиента. */
+export function rankSpecialists(tags) {
   const picked = tags.filter(Boolean);
-  const soft = softTags.filter(Boolean);
   return specialists
     .map((person) => {
       const hits = person.tags.filter((tag) => picked.includes(tag)).length;
-      const softHits = person.tags.filter((tag) => soft.includes(tag)).length;
-      // Бюджет не отсекает жёстко, но заметно двигает специалиста в списке
-      const budget = inBudget(person.price, ranges) ? 1.2 : -1.2;
-      const score = hits + softHits * SOFT_WEIGHT + budget;
-      const fit = Math.min(9.6, 5.8 + score * 0.95 + person.experienceYears / 25);
-      return { person, hits, score, fit: Math.round(fit * 10) / 10 };
+      const fit = Math.min(9.6, 5.8 + hits * 0.95 + person.experienceYears / 25);
+      return { person, hits, fit: Math.round(fit * 10) / 10 };
     })
-    .sort((a, b) => b.score - a.score || b.fit - a.fit);
+    .sort((a, b) => b.hits - a.hits || b.fit - a.fit);
 }

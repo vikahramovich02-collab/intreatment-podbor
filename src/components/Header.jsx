@@ -1,13 +1,13 @@
 import { Mark, CheckIcon } from "./icons.jsx";
 
+/* Оплата и подтверждение происходят уже внутри платформы,
+   поэтому в полосе прогресса только путь до входа. */
 const FUNNEL_STEPS = [
   { id: "chat", label: "Подбор" },
   { id: "register", label: "Регистрация" },
-  { id: "checkout", label: "Оплата" },
-  { id: "done", label: "Готово" },
 ];
 
-function Steps({ current }) {
+function Steps({ current, onStep }) {
   const activeIndex = FUNNEL_STEPS.findIndex((step) => step.id === current);
   if (activeIndex < 0) return null;
   return (
@@ -15,7 +15,16 @@ function Steps({ current }) {
       {FUNNEL_STEPS.map((step, index) => (
         <div key={step.id} style={{ display: "contents" }}>
           {index > 0 && <span className="steps__sep" aria-hidden="true" />}
+          {/* На пройденные точки можно вернуться */}
           <span
+            role={index < activeIndex && onStep ? "button" : undefined}
+            tabIndex={index < activeIndex && onStep ? 0 : undefined}
+            onClick={index < activeIndex && onStep ? () => onStep(step.id) : undefined}
+            onKeyDown={
+              index < activeIndex && onStep
+                ? (event) => (event.key === "Enter" || event.key === " ") && onStep(step.id)
+                : undefined
+            }
             className={`steps__item ${index < activeIndex ? "is-done" : ""} ${
               index === activeIndex ? "is-active" : ""
             }`.trim()}
@@ -35,7 +44,7 @@ function Steps({ current }) {
   );
 }
 
-export default function Header({ onBack, backLabel = "Назад", step, onLogin, onHelp }) {
+export default function Header({ onBack, backLabel = "Назад", step, onLogin, onHelp, onStep }) {
   return (
     <header className="header">
       <div className="header__inner">
@@ -73,7 +82,7 @@ export default function Header({ onBack, backLabel = "Назад", step, onLogin
 
       {step && (
         <div className="header__progress">
-          <Steps current={step} />
+          <Steps current={step} onStep={onStep} />
         </div>
       )}
     </header>

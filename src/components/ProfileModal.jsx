@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Mark, CloseIcon, ChevronLeft, ChevronRight } from "./icons.jsx";
-import { money, buildCalendar, weekRange, nearestSlotLabel, quoted } from "../lib/format.js";
+import {
+  money,
+  buildCalendar,
+  weekRange,
+  quoted,
+  ZONES,
+  zoneLabel,
+  shiftSlot,
+} from "../lib/format.js";
 
 export default function ProfileModal({ match, matchedTags = [], onClose, onChoose, onNext, focus }) {
   const { person } = match;
@@ -8,7 +16,18 @@ export default function ProfileModal({ match, matchedTags = [], onClose, onChoos
   const closeRef = useRef(null);
   const scheduleRef = useRef(null);
 
-  const days = useMemo(() => buildCalendar(person, 2), [person.id]);
+  /* Пояс определяем автоматически, клиент может поменять — слоты пересчитываются */
+  const [zone, setZone] = useState(ZONES[0]);
+  const [zoneOpen, setZoneOpen] = useState(false);
+
+  const days = useMemo(() => {
+    const base = buildCalendar(person, 2);
+    if (zone.utc === ZONES[0].utc) return base;
+    return base.map((day) => ({
+      ...day,
+      slots: day.slots.map((slot) => shiftSlot(slot, zone.utc)).filter(Boolean),
+    }));
+  }, [person.id, zone.utc]);
   const [week, setWeek] = useState(0);
   const visibleDays = days.slice(week * 7, week * 7 + 7);
 
@@ -19,7 +38,7 @@ export default function ProfileModal({ match, matchedTags = [], onClose, onChoos
 
   useEffect(() => {
     setSlot(days[dayIndex]?.slots[0] || "");
-  }, [dayIndex, person.id]);
+  }, [dayIndex, person.id, zone.utc]);
 
   useEffect(() => {
     setWeek(Math.floor(firstFree / 7));
@@ -67,7 +86,14 @@ export default function ProfileModal({ match, matchedTags = [], onClose, onChoos
   };
 
   const shared = person.tags.filter((tag) => matchedTags.includes(tag));
-  const nearest = nearestSlotLabel(person);
+
+  /* Ближайшее свободное время — уже в поясе клиента */
+  const nearest = (() => {
+    const index = days.findIndex((day) => day.slots.length);
+    if (index < 0) return null;
+    const when = index === 0 ? "сегодня" : index === 1 ? "завтра" : days[index].label.toLowerCase();
+    return `${when}, ${days[index].slots[0]}`;
+  })();
 
   return (
     <div
@@ -206,7 +232,32 @@ export default function ProfileModal({ match, matchedTags = [], onClose, onChoos
                   </p>
                 )}
               </div>
-              <p className="card__hint">Ваш часовой пояс: Минск, Беларусь (UTC+3)</p>
+              <div className="cal__tz">
+                <span>
+                  Ваше время: {zoneLabel(zone)} — определили автоматически.{" "}
+                  <button className="link" type="button" onClick={() => setZoneOpen((v) => !v)}>
+                    {zoneOpen ? "Свернуть" : "Изменить"}
+                  </button>
+                </span>
+                {zoneOpen && (
+                  <label className="checkout__select cal__tz-select">
+                    <span className="sr-only">Ваш город</span>
+                    <select
+                      value={zone.id}
+                      onChange={(event) => {
+                        setZone(ZONES.find((item) => item.id === event.target.value));
+                        setZoneOpen(false);
+                      }}
+                    >
+                      {ZONES.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {zoneLabel(item)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </div>
             </div>
           </section>
         </div>

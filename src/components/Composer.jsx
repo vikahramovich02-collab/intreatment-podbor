@@ -9,6 +9,7 @@ export default function Composer({
   placeholder = "Расскажите..",
   disabled = false,
   draft = null,
+  legal = false,
   onPick,
   onPickMany,
   onText,
@@ -125,6 +126,13 @@ export default function Composer({
           </button>
         </form>
 
+        {legal && (
+          <p className="composer__legal">
+            Продолжая, вы соглашаетесь с <a href="#terms">условиями сервиса</a> и{" "}
+            <a href="#privacy">политикой конфиденциальности</a>, включая обработку ответов для
+            подбора специалиста.
+          </p>
+        )}
       </div>
     </div>
   );
