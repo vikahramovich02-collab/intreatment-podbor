@@ -8,7 +8,6 @@ export const flow = [
     id: "name",
     kind: "text",
     prompt: "Как к вам можно обращаться?",
-    hint: "Имя нужно только для того, чтобы разговор был живым.",
     options: [{ label: "Пропустить", skip: true }],
     placeholder: "Ваше имя..",
     next: "topic",
@@ -95,7 +94,6 @@ export const flow = [
     id: "state",
     kind: "multi",
     prompt: "Что из этого про вас сейчас?",
-    hint: "Можно выбрать несколько вариантов или пропустить.",
     options: [
       { label: "Тревога и напряжение", tags: ["тревога"] },
       { label: "Нет сил, всё через силу", tags: ["выгорание", "апатия"] },

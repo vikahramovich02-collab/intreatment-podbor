@@ -1,3 +1,6 @@
+/* Сайт живёт в подпапке GitHub Pages, поэтому пути к файлам строим от базы сборки */
+export const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
+
 export const money = (value) => `${value.toLocaleString("ru-RU")} ₽`;
 
 /* Часовые пояса клиентов. Расписание психологов хранится в минском времени (UTC+3).

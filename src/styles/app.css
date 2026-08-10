@@ -596,13 +596,6 @@ button {
   gap: 8px;
   padding-top: 14px;
 }
-.composer__label {
-  font-size: 14px;
-  color: var(--ghost);
-}
-
- /* Варианты в две колонки: пять пунктов занимают три строки, а не пять.
-   Скролл включается только если список действительно не помещается. */
 .options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1855,6 +1848,20 @@ button {
   font-size: 20px;
   font-weight: 400;
 }
+.cabinet__unpaid {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  margin-top: 16px;
+}
+.cabinet__unpaid .card__hint {
+  margin: 0;
+}
+.cabinet__unpaid .note {
+  width: 100%;
+}
+
 .list {
   margin: 0;
   padding-left: 18px;

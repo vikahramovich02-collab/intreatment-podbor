@@ -6,12 +6,12 @@ const NONE_LABEL = "Ничего из этого";
 export default function Composer({
   options = [],
   mode = "single",
-  hint,
   submitLabel = "Продолжить",
   placeholder = "Расскажите..",
   disabled = false,
   draft = null,
   consent = null, // { checked, onChange } — согласие на обработку данных
+  primaryAction = null, // главное действие над списком вариантов
   onPick,
   onPickMany,
   onText,
@@ -61,7 +61,16 @@ export default function Composer({
   return (
     <div className="composer">
       <div className="column composer__inner">
-        {hint && <p className="composer__label">{hint}</p>}
+        {primaryAction && (
+          <button
+            className="btn btn--primary btn--lg btn--wide"
+            type="button"
+            disabled={blocked}
+            onClick={primaryAction.onClick}
+          >
+            {primaryAction.label}
+          </button>
+        )}
 
         {options.length > 0 && (
           <div

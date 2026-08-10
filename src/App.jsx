@@ -6,8 +6,8 @@ import DoneScreen from "./screens/DoneScreen.jsx";
 import CabinetScreen from "./screens/CabinetScreen.jsx";
 import SafetyScreen from "./screens/SafetyScreen.jsx";
 
-/* Путь до входа на платформу:
-   chat → register → checkout → done → cabinet
+/* Путь до входа на платформу: chat → register → cabinet.
+   Оплата происходит уже внутри платформы: cabinet → checkout → done → cabinet.
    Плюс ветка safety, если в чате прозвучал кризис. */
 export default function App() {
   const [screen, setScreen] = useState("chat");
@@ -35,7 +35,7 @@ export default function App() {
         onBack={() => setScreen("chat")}
         onDone={(user) => {
           setAccount(user);
-          setScreen("checkout");
+          setScreen("cabinet");
         }}
       />
     );
@@ -45,7 +45,7 @@ export default function App() {
       <CheckoutScreen
         booking={booking}
         holdStartedAt={holdStartedAt}
-        onBack={() => setScreen("register")}
+        onBack={() => setScreen("cabinet")}
         onPaid={(result) => {
           setPayment(result);
           setScreen("done");
@@ -65,7 +65,15 @@ export default function App() {
     );
 
   if (screen === "cabinet")
-    return <CabinetScreen booking={booking} payment={payment} onRestart={restart} />;
+    return (
+      <CabinetScreen
+        booking={booking}
+        payment={payment}
+        holdStartedAt={holdStartedAt}
+        onPay={() => setScreen("checkout")}
+        onRestart={restart}
+      />
+    );
 
   return (
     <ChatScreen

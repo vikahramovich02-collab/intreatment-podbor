@@ -1,10 +1,11 @@
 import { useState } from "react";
 import Header from "../components/Header.jsx";
+import { HoldTimer } from "../components/BookingSummary.jsx";
 import { money } from "../lib/format.js";
 
-/* Заглушка личного кабинета — точка, в которой заканчивается путь подбора
-   и начинается платформа. */
-export default function CabinetScreen({ booking, payment, onRestart }) {
+/* Личный кабинет — точка, в которой заканчивается путь подбора и начинается
+   платформа. Оплата происходит уже здесь: до неё запись висит неоплаченной. */
+export default function CabinetScreen({ booking, payment, holdStartedAt, onPay, onRestart }) {
   const [tab, setTab] = useState("next");
   const { person, day, slot, name } = booking;
 
@@ -54,20 +55,37 @@ export default function CabinetScreen({ booking, payment, onRestart }) {
                         {day.label}, {slot} · онлайн, 50 минут
                       </span>
                     </div>
-                    <b>{money(payment.total)}</b>
+                    <b>{money(payment ? payment.total : person.price)}</b>
                   </div>
-                  <div className="card">
-                    <h2>Что дальше</h2>
-                    <ul className="list">
-                      <li>За 15 минут до начала пришлём ссылку на видеовстречу.</li>
-                      <li>Перенести или отменить встречу можно за 24 часа до начала.</li>
-                      <li>После первой сессии здесь появится история следующих записей.</li>
-                    </ul>
-                  </div>
-                  <div className="note" style={{ marginTop: 16 }}>
-                    Если перед встречей станет тревожно — это нормально. Можно написать
-                    специалисту прямо из кабинета.
-                  </div>
+
+                  {payment ? (
+                    <>
+                      <div className="card">
+                        <h2>Что дальше</h2>
+                        <ul className="list">
+                          <li>За 15 минут до начала пришлём ссылку на видеовстречу.</li>
+                          <li>Перенести или отменить встречу можно за 24 часа до начала.</li>
+                          <li>После первой сессии здесь появится история следующих записей.</li>
+                        </ul>
+                      </div>
+                      <div className="note" style={{ marginTop: 16 }}>
+                        Если перед встречей станет тревожно — это нормально. Можно написать
+                        специалисту прямо из кабинета.
+                      </div>
+                    </>
+                  ) : (
+                    <div className="card cabinet__unpaid">
+                      <h2>Запись ждёт оплаты</h2>
+                      <p className="card__hint" style={{ marginTop: 0 }}>
+                        Время держим за вами. После оплаты пришлём ссылку на встречу и
+                        напоминание.
+                      </p>
+                      <button className="btn btn--primary" type="button" onClick={onPay}>
+                        Оплатить {money(person.price)}
+                      </button>
+                      <HoldTimer startedAt={holdStartedAt} />
+                    </div>
+                  )}
                 </>
               )}
 
@@ -83,11 +101,17 @@ export default function CabinetScreen({ booking, payment, onRestart }) {
               {tab === "payments" && (
                 <div className="card">
                   <h2>Оплаты и документы</h2>
-                  <ul className="list">
-                    <li>
-                      {day.label} · {money(payment.total)} · чек отправлен на почту
-                    </li>
-                  </ul>
+                  {payment ? (
+                    <ul className="list">
+                      <li>
+                        {day.label} · {money(payment.total)} · чек отправлен на почту
+                      </li>
+                    </ul>
+                  ) : (
+                    <p className="card__hint" style={{ marginTop: 0 }}>
+                      Пока пусто — встреча ещё не оплачена.
+                    </p>
+                  )}
                 </div>
               )}
 

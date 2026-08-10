@@ -1,3 +1,5 @@
+import { asset } from "../lib/format.js";
+
 /* Демо-данные специалистов.
    tags — метки запросов, по ним считается совпадение с ответами в чате.
    slots — расписание: ключ = день недели (0 = вс … 6 = сб). */
@@ -7,8 +9,8 @@ export const specialists = [
     id: "darya",
     name: "Дарья Микула",
     initials: "ДМ",
-    photo: "/img/04-person-4.jpg",
-    video: "/img/psy-video.mp4",
+    photo: asset("img/04-person-4.jpg"),
+    video: asset("img/psy-video.mp4"),
     role: "Практикующий психолог",
     quote:
       "Работаю с творческими людьми, которые хотят создавать свои проекты и проявляться",
@@ -27,8 +29,8 @@ export const specialists = [
     id: "mariana",
     name: "Марьяна Марковская",
     initials: "ММ",
-    photo: "/img/03-person-3.jpg",
-    video: "/img/psy-video.mp4",
+    photo: asset("img/03-person-3.jpg"),
+    video: asset("img/psy-video.mp4"),
     role: "Практикующий психолог",
     quote:
       "Сопровождаю выход из отношений, помогаю преодолевать кризис расставания с партнёром",
@@ -47,7 +49,7 @@ export const specialists = [
     id: "inna",
     name: "Инна Башкова",
     initials: "ИБ",
-    photo: "/img/02-person-2.jpg",
+    photo: asset("img/02-person-2.jpg"),
     role: "Практикующий психолог",
     quote:
       "Работаю со сложными чувствами и состояниями, когда у жизни нет вкуса или смысла",
@@ -66,7 +68,7 @@ export const specialists = [
     id: "elena",
     name: "Елена Попова",
     initials: "ЕП",
-    photo: "/img/01-person-1.jpg",
+    photo: asset("img/01-person-1.jpg"),
     role: "Практикующий психолог",
     quote: "Помогаю организовать родительство без надрыва, жертв и чувства вины",
     about:
@@ -84,7 +86,7 @@ export const specialists = [
     id: "yulia",
     name: "Юлия Никифорова",
     initials: "ЮН",
-    photo: "/img/05-person-5.jpg",
+    photo: asset("img/05-person-5.jpg"),
     role: "Практикующий психолог",
     quote:
       "Помогаю женщинам, которые хотят большего, но застревают в самокритике и ожидании «подходящего момента»",
@@ -103,7 +105,7 @@ export const specialists = [
     id: "diana",
     name: "Диана Протас",
     initials: "ДП",
-    photo: "/img/06-person-6.jpg",
+    photo: asset("img/06-person-6.jpg"),
     role: "Психолог, психотравматолог",
     quote:
       "Помогаю с тяжёлыми жизненными историями: насилие, травмы, посттравматический стресс",

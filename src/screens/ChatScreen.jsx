@@ -327,7 +327,12 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
       ? {
           options: [...refineOptions, NEW_TOPIC],
           mode: "single",
-          hint: "Можно посмотреть другого специалиста, начать новую тему или написать своими словами",
+          primaryAction: matches[matchIndex]
+            ? {
+                label: "Записаться",
+                onClick: () => openProfile(matches[matchIndex].person, "schedule"),
+              }
+            : null,
         }
       : {
           options:
@@ -335,7 +340,6 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
               ? [...step.options, { label: "Ничего из этого", none: true }]
               : step?.options || [],
           mode: step?.kind === "multi" ? "multi" : "single",
-          hint: step?.hint,
           submitLabel: step?.submitLabel,
           placeholder: step?.placeholder,
         };
