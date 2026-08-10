@@ -97,14 +97,8 @@ export default function RecommendationCard({ match, onOpen, time }) {
         )}
       </div>
 
+      {/* Запись — чёрной кнопкой в зоне действий под чатом, здесь только профиль */}
       <div className="rec__actions">
-        <button
-          className="btn btn--primary btn--sm"
-          type="button"
-          onClick={() => onOpen(person, nearest ? "schedule" : "about")}
-        >
-          Записаться
-        </button>
         <button className="link" type="button" onClick={() => onOpen(person, "about")}>
           Подробнее о психологе
         </button>

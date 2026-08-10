@@ -55,7 +55,6 @@ export default function CheckoutScreen({ booking, holdStartedAt, onBack, onPaid 
     setCard("4242 4242 4242 4242");
     setExpiry("12 / 30");
     setCvc("123");
-    setEmail((value) => value || "demo@intreatment.ru");
   };
 
   const pay = () => {
@@ -65,21 +64,27 @@ export default function CheckoutScreen({ booking, holdStartedAt, onBack, onPaid 
 
   const submit = (event) => {
     event.preventDefault();
+
+    if (!email.includes("@")) {
+      setError("Укажите email — на него придёт чек.");
+      return;
+    }
     if (!needsCard) {
+      setError("");
       pay();
       return;
     }
     if (!cardOpen) {
+      setError("");
       setCardOpen(true);
       return;
     }
     if (
       card.replace(/\D/g, "").length !== 16 ||
       expiry.replace(/\D/g, "").length !== 4 ||
-      cvc.length !== 3 ||
-      !email.includes("@")
+      cvc.length !== 3
     ) {
-      setError("Проверьте данные карты и email для чека.");
+      setError("Проверьте данные карты.");
       return;
     }
     setError("");
@@ -171,19 +176,20 @@ export default function CheckoutScreen({ booking, holdStartedAt, onBack, onPaid 
                       />
                     </label>
                   </div>
-                  <label className="field">
-                    <span>Email для чека</span>
-                    <input
-                      type="email"
-                      autoComplete="email"
-                      value={email}
-                      onChange={(event) => setEmail(event.target.value)}
-                      placeholder="name@example.com"
-                      aria-invalid={Boolean(error)}
-                    />
-                  </label>
                 </div>
               )}
+
+              <label className="field">
+                <span>Email для чека</span>
+                <input
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="name@example.com"
+                  aria-invalid={Boolean(error)}
+                />
+              </label>
 
               <div className="checkout__row">
                 <span>Сессия, 50 мин</span>

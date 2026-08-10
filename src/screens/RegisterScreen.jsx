@@ -1,9 +1,42 @@
+import { useRef, useState } from "react";
 import Header from "../components/Header.jsx";
 import BookingSummary, { HoldTimer } from "../components/BookingSummary.jsx";
 import { ArrowLeft } from "../components/icons.jsx";
 
-/* Вход только через Яндекс ID или VK ID — регистрации по телефону нет. */
+const DEMO_CODE = "1234";
+
+/* Вход по номеру телефона или через Яндекс ID / VK ID. */
 export default function RegisterScreen({ booking, holdStartedAt, onBack, onDone, onStep }) {
+  const [stage, setStage] = useState("phone"); // phone → code
+  const [phone, setPhone] = useState("+375 ");
+  const [code, setCode] = useState(["", "", "", ""]);
+  const [error, setError] = useState("");
+  const codeRefs = useRef([]);
+
+  const requestCode = (event) => {
+    event.preventDefault();
+    if (phone.replace(/\D/g, "").length < 11) {
+      setError("Проверьте номер телефона — нужно 11–12 цифр.");
+      return;
+    }
+    setError("");
+    setStage("code");
+    requestAnimationFrame(() => codeRefs.current[0]?.focus());
+  };
+
+  const changeDigit = (index, value) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    const next = [...code];
+    next[index] = digit;
+    setCode(next);
+    setError("");
+    if (digit && index < 3) codeRefs.current[index + 1]?.focus();
+    if (next.every(Boolean)) {
+      if (next.join("") === DEMO_CODE) onDone({ phone, method: "phone" });
+      else setError(`Код не подошёл. В прототипе он всегда ${DEMO_CODE}.`);
+    }
+  };
+
   return (
     <div className="app">
       <Header step="register" onBack={onBack} backLabel="Назад" onStep={onStep} />
@@ -24,6 +57,68 @@ export default function RegisterScreen({ booking, holdStartedAt, onBack, onDone,
               </div>
 
               <div className="card">
+                {stage === "phone" ? (
+                  <form className="field-stack" onSubmit={requestCode} noValidate>
+                    <label className="field">
+                      <span>Номер телефона</span>
+                      <input
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        value={phone}
+                        aria-invalid={Boolean(error)}
+                        onChange={(event) => {
+                          setPhone(event.target.value);
+                          setError("");
+                        }}
+                        placeholder="+375 29 000 00 00"
+                      />
+                    </label>
+                    {error && (
+                      <p className="form-error" role="alert">
+                        {error}
+                      </p>
+                    )}
+                    <button className="btn btn--primary btn--lg btn--wide" type="submit">
+                      Получить код
+                    </button>
+                  </form>
+                ) : (
+                  <div className="field-stack">
+                    <p className="card__hint" style={{ marginTop: 0 }}>
+                      Отправили четыре цифры на {phone}. В прототипе код — {DEMO_CODE}.
+                    </p>
+                    <div className="code-inputs">
+                      {code.map((digit, index) => (
+                        <input
+                          key={index}
+                          ref={(node) => (codeRefs.current[index] = node)}
+                          value={digit}
+                          inputMode="numeric"
+                          maxLength={1}
+                          aria-label={`Цифра ${index + 1}`}
+                          onChange={(event) => changeDigit(index, event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Backspace" && !code[index] && index > 0) {
+                              codeRefs.current[index - 1]?.focus();
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                    {error && (
+                      <p className="form-error" role="alert">
+                        {error}
+                      </p>
+                    )}
+                    <button className="link" type="button" onClick={() => setStage("phone")}>
+                      Изменить номер
+                    </button>
+                  </div>
+                )}
+
+                <div className="divider">или</div>
+
                 <div className="auth__providers">
                   <button
                     className="provider"
