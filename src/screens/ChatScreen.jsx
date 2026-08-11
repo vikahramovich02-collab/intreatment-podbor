@@ -23,10 +23,11 @@ const GREETING =
 const ASK_NAME = "Как к вам можно обращаться?";
 const ASK_CATEGORY = "В какой сфере вы хотели бы изменений?";
 const ASK_SUB = "Что ближе к вашей ситуации?";
-const ASK_RECOGNIZE = "Узнаёте себя в этом?";
+const ASK_RECOGNIZE = "Что из этого про вас? Можно отметить или описать своими словами.";
 
 const DUTY = { signature: "Дежурный психолог Дарья" };
-const BACK_TO_CATEGORIES = { label: "Вернуться к категориям", toCategories: true };
+const BACK_TO_CATEGORIES = { label: "Вернуться к темам", toCategories: true };
+const STEP_BACK = { label: "Шаг назад", stepBack: true };
 const NEXT_SPECIALIST = { label: "Показать другого специалиста", nextPerson: true };
 const NEW_TOPIC = { label: "Обсудить другую тему", newTopic: true };
 
@@ -74,6 +75,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
   const [topicId, setTopicId] = useState(null);
   const [visibleTopic, setVisibleTopic] = useState(null);
   const [visibleCard, setVisibleCard] = useState(null); // карточка, на которой стоит скролл
+  const history = useRef([]); // снимки состояния для шага назад
 
   const threadRef = useRef(null);
   const nodeRefs = useRef({});
@@ -83,6 +85,8 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
 
   useEffect(() => {
     threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight, behavior: "smooth" });
+    // разговор пошёл дальше — прежняя карточка больше не «активная»
+    setVisibleCard(null);
   }, [messages.length, typing]);
 
   const clearTimers = () => {
@@ -99,7 +103,29 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
     timers.current.push(timer);
   };
 
-  const snapshotNow = () => ({ stage, category, subLabel, vCode, topicId, topics, name });
+  const snapshotNow = () => ({
+    stage,
+    category,
+    subLabel,
+    vCode,
+    topicId,
+    topics,
+    name,
+    length: messages.length,
+  });
+
+  const restore = (snapshot) => {
+    clearTimers();
+    setTyping(false);
+    setMessages(messages.slice(0, snapshot.length));
+    setStage(snapshot.stage);
+    setCategory(snapshot.category);
+    setSubLabel(snapshot.subLabel);
+    setVCode(snapshot.vCode);
+    setTopicId(snapshot.topicId);
+    setTopics(snapshot.topics);
+    setName(snapshot.name);
+  };
 
   const hear = (text) =>
     setMessages((prev) => [
@@ -161,7 +187,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
       return;
     }
     setStage("situation");
-    say(`${situation}\n\n${ASK_RECOGNIZE}`, { topicId });
+    say(ASK_RECOGNIZE, { topicId });
   };
 
   const openTopic = (title) => {
@@ -182,6 +208,12 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
 
   /* ── Ответы ── */
   const pickOption = (option) => {
+    if (option.stepBack) {
+      const previous = history.current.pop();
+      if (previous) restore(previous);
+      return;
+    }
+    history.current.push(snapshotNow());
     hear(option.label);
 
     if (option.toCategories || option.newTopic) {
@@ -253,15 +285,22 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
     }
 
     if (stage === "situation") {
-      if (option.recognize) {
-        showMatch(vCode);
-      } else {
-        setStage("sub");
-        say(withName("Тогда посмотрим ещё раз: что ближе к вашей ситуации?"), { topicId });
-      }
+      setStage("sub");
+      say(withName("Тогда посмотрим ещё раз: что ближе к вашей ситуации?"), { topicId });
       return;
     }
 
+  };
+
+  const pickMany = (labels) => {
+    history.current.push(snapshotNow());
+    hear(labels.length ? labels.join("; ") : "Ничего из этого");
+    if (!labels.length) {
+      setStage("sub");
+      say(withName("Тогда посмотрим ещё раз: что ближе к вашей ситуации?"), { topicId });
+      return;
+    }
+    showMatch(vCode);
   };
 
   const sendText = (value) => {
@@ -277,6 +316,12 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
       setName(visitor);
       setStage("category");
       say(`Приятно познакомиться, ${visitor}. ${ASK_CATEGORY}`);
+      return;
+    }
+
+    if (stage === "situation") {
+      // описал своими словами — отвечает дежурный психолог и показывает специалистов
+      showMatch(vCode, topicId, 0, DUTY);
       return;
     }
 
@@ -319,17 +364,19 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
     const node = threadRef.current;
     if (!node) return;
     const edge = node.scrollTop + 140;
-    const middle = node.scrollTop + node.clientHeight / 2;
+    const top = node.scrollTop;
+    const bottom = node.scrollTop + node.clientHeight;
     let current = null;
     let card = null;
     messages.forEach((message, index) => {
       const item = nodeRefs.current[index];
       if (!item) return;
       if (message.topicId && item.offsetTop <= edge) current = message.topicId;
-      // действие внизу относится к той карточке, что сейчас перед глазами
-      if ((message.role === "rec" || message.role === "product") && item.offsetTop <= middle) {
-        card = message;
-      }
+      // действие внизу относится к карточке, которая занимает экран, а не мелькает краем
+      const seen =
+        Math.min(item.offsetTop + item.offsetHeight, bottom) - Math.max(item.offsetTop, top);
+      const visible = seen > Math.min(item.offsetHeight * 0.5, 240);
+      if ((message.role === "rec" || message.role === "product") && visible) card = message;
     });
     setVisibleTopic(current);
     setVisibleCard(card);
@@ -342,10 +389,9 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
 
   /* Главное действие под чатом — по карточке, на которой стоит скролл */
   const primaryAction = (() => {
-    // пока не прокручивали — ориентируемся на последнюю карточку в ленте
-    const lastCard = [...messages]
-      .reverse()
-      .find((message) => message.role === "rec" || message.role === "product");
+    // пока не прокручивали — берём карточку, только если она последняя в ленте
+    const last = messages[messages.length - 1];
+    const lastCard = last?.role === "rec" || last?.role === "product" ? last : null;
     const card = visibleCard || lastCard;
     if (card?.role === "product") {
       return {
@@ -380,28 +426,37 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
     if (stage === "sub") {
       return {
         options: subcategoriesOf(category).map(([label, code]) => ({ label, vCode: code })),
+        stepBack: history.current.length > 0,
         back: BACK_TO_CATEGORIES,
       };
     }
     if (stage === "subsub") {
       return {
         options: subSubcategoriesOf(subLabel).map(([label, code]) => ({ label, vCode: code })),
+        stepBack: history.current.length > 0,
         back: BACK_TO_CATEGORIES,
       };
     }
     if (stage === "situation") {
+      // пункты ситуации из алгоритма — чекбоксами
+      const points = (situationOf(vCode) || "")
+        .split("\n")
+        .map((line) => line.replace(/^[•\s]+/, "").trim())
+        .filter(Boolean);
       return {
-        options: [
-          { label: "Да, узнаю себя", recognize: true },
-          { label: "Не совсем, вернуться к списку" },
-        ],
+        options: [...points.map((label) => ({ label })), { label: "Ничего из этого", none: true }],
+        mode: "multi",
+        submitLabel: "Продолжить",
+        placeholder: "Опишите свою ситуацию..",
         back: BACK_TO_CATEGORIES,
+        stepBack: history.current.length > 0,
       };
     }
     const hasMore = matches.length > 1;
     return {
       options: hasMore ? [NEXT_SPECIALIST, NEW_TOPIC] : [NEW_TOPIC],
       back: BACK_TO_CATEGORIES,
+      stepBack: history.current.length > 0,
     };
   })();
 
@@ -467,6 +522,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
           draft={draft}
           disabled={typing}
           onPick={pickOption}
+          onPickMany={pickMany}
           onText={sendText}
           consent={consent ? null : { checked: consent, onChange: setConsent }}
         />

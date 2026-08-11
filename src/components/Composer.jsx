@@ -14,6 +14,7 @@ export default function Composer({
   consent = null, // { checked, onChange } — согласие на обработку данных
   primaryAction = null, // главное действие над списком вариантов
   back = null, // возврат к списку категорий
+  stepBack = false, // доступен ли шаг назад
   onPick,
   onPickMany,
   onText,
@@ -72,15 +73,30 @@ export default function Composer({
   return (
     <div className="composer">
       <div className="column composer__inner">
-        {back && (
-          <button
-            className="composer__back"
-            type="button"
-            onClick={() => (blocked ? flashConsent() : onPick(back))}
-          >
-            <ArrowLeft />
-            {back.label}
-          </button>
+        {(back || stepBack) && (
+          <div className="composer__nav">
+            {stepBack && (
+              <button
+                className="composer__back"
+                type="button"
+                onClick={() =>
+                  blocked ? flashConsent() : onPick({ label: "Шаг назад", stepBack: true })
+                }
+              >
+                <ArrowLeft />
+                Шаг назад
+              </button>
+            )}
+            {back && (
+              <button
+                className="composer__back"
+                type="button"
+                onClick={() => (blocked ? flashConsent() : onPick(back))}
+              >
+                {back.label}
+              </button>
+            )}
+          </div>
         )}
 
         {primaryAction && (

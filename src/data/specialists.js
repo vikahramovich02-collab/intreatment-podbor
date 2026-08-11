@@ -6,6 +6,7 @@ import { asset } from "../lib/format.js";
 export const specialists = [
   {
     id: "anastasia",
+    profileUrl: "https://telegra.ph/Anastasiya-Sibgatulina-07-04",
     name: "Анастасия Сибгатулина",
     initials: "АС",
     role: "Практикующий психолог",
@@ -16,6 +17,7 @@ export const specialists = [
   },
   {
     id: "darya",
+    profileUrl: "https://telegra.ph/Darya-Mikula-07-04",
     name: "Дарья Микула",
     initials: "ДМ",
     photo: asset("img/04-person-4.jpg"),
@@ -28,6 +30,7 @@ export const specialists = [
   },
   {
     id: "inna",
+    profileUrl: "https://telegra.ph/INNA-BASHKOVA-07-04",
     couplePrice: 5500,
     coupleDuration: "1 час 20 минут",
     name: "Инна Башкова",
@@ -41,6 +44,7 @@ export const specialists = [
   },
   {
     id: "diana",
+    profileUrl: "https://telegra.ph/Diana-Protas-07-04",
     vacationUntil: "2026-08-25", // отпуск: дни недоступны для записи
     name: "Диана Протас",
     initials: "ДП",
@@ -53,6 +57,7 @@ export const specialists = [
   },
   {
     id: "maryana",
+    profileUrl: "https://telegra.ph/Menya-zovut-07-04",
     couplePrice: 5500,
     coupleDuration: "1 час 20 минут",
     name: "Марьяна Марковская",
@@ -67,6 +72,7 @@ export const specialists = [
   },
   {
     id: "ekaterina",
+    profileUrl: "https://telegra.ph/Ekaterina-Loginova-07-04-2",
     name: "Екатерина Логинова",
     initials: "ЕЛ",
     role: "Практикующий психолог",
@@ -77,6 +83,7 @@ export const specialists = [
   },
   {
     id: "elena",
+    profileUrl: "https://telegra.ph/Elena-Popova-07-04",
     name: "Елена Попова",
     initials: "ЕП",
     photo: asset("img/01-person-1.jpg"),
@@ -88,6 +95,7 @@ export const specialists = [
   },
   {
     id: "yulia",
+    profileUrl: "https://teletype.in/@intreatment/_xD7LDRHhEH",
     name: "Юлия Никифорова",
     initials: "ЮН",
     photo: asset("img/05-person-5.jpg"),

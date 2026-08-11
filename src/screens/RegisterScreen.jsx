@@ -1,9 +1,12 @@
+import { useState } from "react";
 import Header from "../components/Header.jsx";
 import BookingSummary, { HoldTimer } from "../components/BookingSummary.jsx";
 import { ArrowLeft } from "../components/icons.jsx";
 
-/* Вход только через Яндекс ID или VK ID — регистрации по телефону нет. */
+/* Вход по почте или через Яндекс ID / VK ID. */
 export default function RegisterScreen({ order, holdStartedAt, onBack, onDone }) {
+  const [email, setEmail] = useState("");
+
   return (
     <div className="app">
       <Header onBack={onBack} backLabel="Назад" />
@@ -25,6 +28,34 @@ export default function RegisterScreen({ order, holdStartedAt, onBack, onDone })
               </div>
 
               <div className="card">
+                <form
+                  className="field-stack"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    if (email.includes("@")) onDone({ method: "email", email });
+                  }}
+                >
+                  <label className="field">
+                    <span>Электронная почта</span>
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      placeholder="name@example.com"
+                    />
+                  </label>
+                  <button
+                    className="btn btn--primary btn--lg btn--wide"
+                    type="submit"
+                    disabled={!email.includes("@")}
+                  >
+                    Войти
+                  </button>
+                </form>
+
+                <div className="divider">или войти через</div>
+
                 <div className="auth__providers">
                   <button
                     className="provider"

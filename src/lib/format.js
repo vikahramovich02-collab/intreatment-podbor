@@ -14,12 +14,25 @@ export const money = (value) => `${value.toLocaleString("ru-RU")} ₽`;
 /* Часовые пояса клиентов. Расписание психологов хранится в минском времени (UTC+3).
    Город не спрашиваем — достаточно смещения. */
 export const BASE_UTC = 3;
-export const ZONES = Array.from({ length: 13 }, (_, index) => {
-  const utc = index - 4; // от UTC−4 до UTC+8
-  return { id: `utc${utc}`, utc };
-});
+export const ZONES = [
+  { id: "utc-4", utc: -4, city: "Нью-Йорк" },
+  { id: "utc0", utc: 0, city: "Лондон" },
+  { id: "utc1", utc: 1, city: "Берлин" },
+  { id: "utc2", utc: 2, city: "Калининград" },
+  { id: "utc3", utc: 3, city: "Москва, Санкт-Петербург" },
+  { id: "utc4", utc: 4, city: "Самара" },
+  { id: "utc5", utc: 5, city: "Екатеринбург" },
+  { id: "utc6", utc: 6, city: "Омск" },
+  { id: "utc7", utc: 7, city: "Красноярск" },
+  { id: "utc8", utc: 8, city: "Иркутск" },
+  { id: "utc9", utc: 9, city: "Якутск" },
+  { id: "utc10", utc: 10, city: "Владивосток" },
+  { id: "utc11", utc: 11, city: "Магадан" },
+  { id: "utc12", utc: 12, city: "Камчатка" },
+];
 
-export const zoneLabel = (zone) => `UTC${zone.utc >= 0 ? "+" : ""}${zone.utc}`;
+export const zoneShort = (zone) => `UTC${zone.utc >= 0 ? "+" : ""}${zone.utc}`;
+export const zoneLabel = (zone) => `${zoneShort(zone)} · ${zone.city}`;
 
 /* Сдвигаем время слота в пояс клиента. Слоты, уехавшие за пределы суток,
    в прототипе не показываем — иначе поедет и дата. */

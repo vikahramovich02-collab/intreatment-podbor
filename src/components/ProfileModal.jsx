@@ -5,6 +5,8 @@ import {
   buildCalendar,
   weekRange,
   vacationLabel,
+  zoneShort,
+  BASE_UTC,
   ZONES,
   zoneLabel,
   shiftSlot,
@@ -16,19 +18,18 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
   const scheduleRef = useRef(null);
 
   /* Пояс определяем автоматически, клиент может поменять — слоты пересчитываются */
-  const [zone, setZone] = useState(ZONES[0]);
+  const [zone, setZone] = useState(ZONES.find((item) => item.utc === BASE_UTC));
   const [zoneOpen, setZoneOpen] = useState(false);
 
   const days = useMemo(() => {
-    const base = buildCalendar(person, 2);
-    if (zone.utc === ZONES[0].utc) return base;
+    const base = buildCalendar(person, 4);
+    if (zone.utc === BASE_UTC) return base;
     return base.map((day) => ({
       ...day,
       slots: day.slots.map((slot) => shiftSlot(slot, zone.utc)).filter(Boolean),
     }));
   }, [person.id, zone.utc]);
-  const [week, setWeek] = useState(0);
-  const visibleDays = days.slice(week * 7, week * 7 + 7);
+  const visibleDays = days;
 
   const firstFree = Math.max(0, days.findIndex((day) => day.slots.length));
   const [dayIndex, setDayIndex] = useState(firstFree);
@@ -40,7 +41,6 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
   }, [dayIndex, person.id, zone.utc]);
 
   useEffect(() => {
-    setWeek(Math.floor(firstFree / 7));
     setDayIndex(firstFree);
   }, [person.id]);
 
@@ -136,7 +136,12 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
             <h3>О специалисте</h3>
             <p>{person.about}</p>
             <p>Формат работы: {person.format.toLowerCase()}, сессия 50 минут.</p>
-            <p>
+            <p className="modal__links">
+              {person.profileUrl && (
+                <a className="link" href={person.profileUrl} target="_blank" rel="noreferrer">
+                  Полный профиль
+                </a>
+              )}
               <a className="link" href="#diplomas">
                 Документы об образовании
               </a>
@@ -146,25 +151,8 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
           <section className="section" ref={scheduleRef}>
             <h3>Расписание</h3>
             <div className="cal__head">
-              <button
-                className="cal__nav"
-                type="button"
-                aria-label="Предыдущая неделя"
-                disabled={week === 0}
-                onClick={() => setWeek((value) => Math.max(0, value - 1))}
-              >
-                <ChevronLeft />
-              </button>
-              <strong aria-live="polite">{weekRange(visibleDays)}</strong>
-              <button
-                className="cal__nav"
-                type="button"
-                aria-label="Следующая неделя"
-                disabled={week === 1}
-                onClick={() => setWeek((value) => Math.min(1, value + 1))}
-              >
-                <ChevronRight />
-              </button>
+              <strong>{weekRange(days)}</strong>
+              <span className="cal__zone">Время в поясе {zoneShort(zone)}</span>
             </div>
 
             {vacation && (
@@ -173,7 +161,7 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
 
             <div className="cal__grid">
               {visibleDays.map((day, index) => {
-                const globalIndex = week * 7 + index;
+                const globalIndex = index;
                 const free = day.slots.length > 0;
                 return (
                   <button
@@ -232,7 +220,10 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
 
             <div className="slots">
               <div className="slots__title">
-                Выберите время <span>{selectedDay?.label}</span>
+                Выберите время{" "}
+                <span>
+                  {selectedDay?.label} · {zoneShort(zone)}
+                </span>
               </div>
               <div className="slots__grid">
                 {selectedDay?.slots.length ? (
