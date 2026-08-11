@@ -21,12 +21,20 @@ export default function ProductCard({ product, onBuy, time }) {
           </span>
         </div>
 
-        <p className="rec__about">{product.about}</p>
-        <p className="rec__about product__for">{product.forWhom}</p>
+        <div className="rec__bottom">
+          <div className="rec__col">
+            <p className="rec__about">{product.about}</p>
+            <p className="rec__about product__for">{product.forWhom}</p>
+          </div>
 
-        <button className="btn btn--primary btn--sm" type="button" onClick={() => onBuy(product)}>
-          Забрать за {money(product.price)}
-        </button>
+          <button
+            className="btn btn--primary btn--sm"
+            type="button"
+            onClick={() => onBuy(product)}
+          >
+            Забрать за {money(product.price)}
+          </button>
+        </div>
       </div>
 
       {time && <time className="msg__time">{time}</time>}

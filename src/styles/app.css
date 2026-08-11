@@ -914,11 +914,12 @@ button {
 .rec__card {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 24px;
   width: 100%;
-  max-width: 620px;
-  padding: 20px;
+  max-width: 864px;
+  min-height: 226px;
+  padding: 23px 19px 19px;
   border: 1px solid var(--card-line);
   border-radius: var(--r-lg);
   background: var(--paper);
@@ -926,36 +927,65 @@ button {
 .rec__head {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 5px;
+  color: var(--ink-80);
 }
 .rec__name {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 500;
-  color: var(--ink);
+  line-height: 1.1;
 }
 .rec__role {
   font-size: 14px;
-  color: var(--ghost);
+  line-height: 1.2;
 }
-/* Стоимость — обведённой плашкой, без заливки */
+.rec__bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+.rec__col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  max-width: 361px;
+}
+/* Описание из бота длиннее, чем в макете, — показываем первые строки */
+.rec__about {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--ink-80);
+}
+.rec__more {
+  align-self: flex-start;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.4);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.16s var(--ease);
+}
+.rec__more:hover {
+  color: var(--ink);
+}
 .rec__meta {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-wrap: nowrap;
+  gap: 10px;
 }
-
-.product__for {
-  color: var(--ink-soft);
-  font-size: 15px;
-}
-
 .rec__price {
-  padding: 12px 14px;
-  border: 1px solid var(--hairline);
-  border-radius: var(--r-md);
-  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  background: var(--meta-bg);
+  font-size: 13px;
   line-height: 1;
-  color: var(--ink);
+  color: #000;
+  white-space: nowrap;
 }
 
 .rec__circle {
@@ -2040,6 +2070,21 @@ button {
   .rec__circle {
     width: 168px;
     height: 168px;
+  }
+  .rec__card {
+    min-height: 0;
+    gap: 18px;
+  }
+  .rec__bottom {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .rec__col {
+    max-width: none;
+  }
+  .rec__meta {
+    flex-wrap: wrap;
   }
   .rec__about {
     max-width: none;

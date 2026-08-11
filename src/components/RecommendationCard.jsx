@@ -76,24 +76,27 @@ export default function RecommendationCard({ person, onOpen, time }) {
       <VideoCircle person={person} />
       {person.video && <p className="rec__videohint">Видео-визитка · 30 секунд</p>}
 
-      {/* Инфо о психологе — отдельной карточкой; запись кнопкой под чатом */}
+      {/* Карточка по макету: имя сверху, снизу описание со ссылкой и плашки справа */}
       <div className="rec__card">
         <div className="rec__head">
           <b className="rec__name">{person.name}</b>
           <span className="rec__role">{person.role}</span>
         </div>
 
-        <p className="rec__about">{person.about}</p>
+        <div className="rec__bottom">
+          <div className="rec__col">
+            <p className="rec__about">{person.about}</p>
+            <button className="rec__more" type="button" onClick={() => onOpen(person, "about")}>
+              Подробнее о психологе
+            </button>
+          </div>
 
-        <button className="link" type="button" onClick={() => onOpen(person, "about")}>
-          Подробнее о психологе
-        </button>
-
-        <div className="rec__meta">
-          <span className="rec__price">{money(person.price)} • 50 минут</span>
-          <span className="rec__price">
-            {nearest ? `Ближайшая запись: ${nearest}` : "Ближайших дат нет"}
-          </span>
+          <div className="rec__meta">
+            <span className="rec__price">{money(person.price)} • 50 минут</span>
+            <span className="rec__price">
+              {nearest ? `Ближайшая запись: ${nearest}` : "Ближайших дат нет"}
+            </span>
+          </div>
         </div>
       </div>
 
