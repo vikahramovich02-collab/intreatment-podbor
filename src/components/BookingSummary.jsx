@@ -70,7 +70,7 @@ export default function BookingSummary({ order, total, children }) {
             </div>
             <div className="summary__row">
               <dt>Формат</dt>
-              <dd>Онлайн · 50 минут</dd>
+              <dd>Онлайн · 1 час</dd>
             </div>
           </>
         ) : (

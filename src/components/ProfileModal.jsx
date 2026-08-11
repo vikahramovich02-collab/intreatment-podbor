@@ -125,7 +125,7 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
               {person.role}
             </p>
             <div className="modal__hero-meta">
-              <span className="pill-meta">{money(person.price)} • 50 минут</span>
+              <span className="pill-meta">{money(person.price)} • 1 час</span>
               {nearest && <span className="pill-meta">Ближайшая запись: {nearest}</span>}
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
             {(person.profile || person.about).split("\n\n").map((paragraph, index) => (
               <p key={index}>{paragraph}</p>
             ))}
-            <p>Формат работы: {person.format.toLowerCase()}, сессия 50 минут.</p>
+            <p>Формат работы: {person.format.toLowerCase()}, продолжительность консультации 1 час.</p>
             <p className="modal__links">
               <a className="link" href="#diplomas">
                 Документы об образовании

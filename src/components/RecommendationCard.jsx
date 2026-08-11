@@ -94,7 +94,7 @@ export default function RecommendationCard({ person, lead, onOpen, time }) {
           </div>
 
           <div className="rec__meta">
-            <span className="rec__price">{money(person.price)} • 50 минут</span>
+            <span className="rec__price">{money(person.price)} • 1 час</span>
             {nearest ? (
               <button
                 type="button"

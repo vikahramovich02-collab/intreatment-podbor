@@ -446,7 +446,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
       return {
         options: [...points.map((label) => ({ label })), { label: "Ничего из этого", none: true }],
         mode: "multi",
-        submitLabel: "Продолжить",
+        submitLabel: "Узнаю себя в этих ситуациях",
         placeholder: "Опишите свою ситуацию..",
         back: BACK_TO_CATEGORIES,
         stepBack: history.current.length > 0,

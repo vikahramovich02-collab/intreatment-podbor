@@ -12,7 +12,7 @@ export const sessionOrder = ({ person, day, slot, name }) => ({
   name,
   price: person.price,
   title: `Сессия с ${person.name}`,
-  meta: `${day.label} в ${slot} · онлайн, 50 минут`,
+  meta: `${day.label} в ${slot} · онлайн, 1 час`,
 });
 
 export const productOrder = (product) => ({
@@ -24,7 +24,7 @@ export const productOrder = (product) => ({
 });
 
 export const orderLine = (order) =>
-  order.kind === "session" ? "Сессия, 50 мин" : order.product.kind;
+  order.kind === "session" ? "Консультация, 1 час" : order.product.kind;
 
 export const orderTotal = (order, discount = 0) => Math.round(order.price * (1 - discount));
 
