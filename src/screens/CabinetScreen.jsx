@@ -5,9 +5,10 @@ import { money } from "../lib/format.js";
 
 /* Личный кабинет — точка, в которой заканчивается путь подбора и начинается
    платформа. Оплата происходит уже здесь: до неё запись висит неоплаченной. */
-export default function CabinetScreen({ booking, payment, holdStartedAt, onPay, onRestart }) {
+export default function CabinetScreen({ order, payment, holdStartedAt, onPay, onRestart }) {
   const [tab, setTab] = useState("next");
-  const { person, day, slot, name } = booking;
+  const isSession = order.kind === "session";
+  const { name } = order;
 
   return (
     <div className="app">
@@ -46,16 +47,16 @@ export default function CabinetScreen({ booking, payment, holdStartedAt, onPay, 
               {tab === "next" && (
                 <>
                   <div className="cabinet__session">
-                    <span className="avatar">
-                      <img src={person.photo} alt="" />
-                    </span>
-                    <div>
-                      <strong>{person.name}</strong>
-                      <span>
-                        {day.label}, {slot} · онлайн, 50 минут
+                    {isSession && (
+                      <span className="avatar">
+                        <img src={order.person.photo} alt="" />
                       </span>
+                    )}
+                    <div>
+                      <strong>{isSession ? order.person.name : order.title}</strong>
+                      <span>{order.meta}</span>
                     </div>
-                    <b>{money(payment ? payment.total : person.price)}</b>
+                    <b>{money(payment ? payment.total : order.price)}</b>
                   </div>
 
                   {payment ? (
@@ -75,15 +76,16 @@ export default function CabinetScreen({ booking, payment, holdStartedAt, onPay, 
                     </>
                   ) : (
                     <div className="card cabinet__unpaid">
-                      <h2>Запись ждёт оплаты</h2>
+                      <h2>{isSession ? "Запись ждёт оплаты" : "Материал ждёт оплаты"}</h2>
                       <p className="card__hint" style={{ marginTop: 0 }}>
-                        Время держим за вами. После оплаты пришлём ссылку на встречу и
-                        напоминание.
+                        {isSession
+                          ? "Время держим за вами. После оплаты пришлём ссылку на встречу и напоминание."
+                          : "После оплаты материал появится здесь — им можно пользоваться в любой момент."}
                       </p>
                       <button className="btn btn--primary" type="button" onClick={onPay}>
-                        Оплатить {money(person.price)}
+                        Оплатить {money(order.price)}
                       </button>
-                      <HoldTimer startedAt={holdStartedAt} />
+                      {holdStartedAt && <HoldTimer startedAt={holdStartedAt} />}
                     </div>
                   )}
                 </>
@@ -104,7 +106,7 @@ export default function CabinetScreen({ booking, payment, holdStartedAt, onPay, 
                   {payment ? (
                     <ul className="list">
                       <li>
-                        {day.label} · {money(payment.total)} · чек отправлен на почту
+                        {order.title} · {money(payment.total)} · чек отправлен на почту
                       </li>
                     </ul>
                   ) : (

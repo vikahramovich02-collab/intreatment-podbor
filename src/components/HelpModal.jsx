@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Mark, CloseIcon, CheckIcon, ArrowLeft } from "./icons.jsx";
+import { Mark, CloseIcon, ArrowLeft } from "./icons.jsx";
 import { products } from "../data/products.js";
 import { money } from "../lib/format.js";
 
@@ -7,10 +7,9 @@ import { money } from "../lib/format.js";
    Сначала — бесплатная экстренная помощь, и только ниже платные материалы:
    человеку в остром кризисе мы ничего не продаём.
    Шаги: список → карточка продукта → оплата → забрать. */
-export default function HelpModal({ onClose, focus = "list" }) {
-  const [stage, setStage] = useState("list"); // list → product → pay → done
+export default function HelpModal({ onClose, onBuy, focus = "list" }) {
+  const [stage, setStage] = useState("list"); // list → product
   const [picked, setPicked] = useState(null);
-  const [pending, setPending] = useState(false);
   const panelRef = useRef(null);
   const closeRef = useRef(null);
   const productsRef = useRef(null);
@@ -55,20 +54,7 @@ export default function HelpModal({ onClose, focus = "list" }) {
     }
   };
 
-  const pay = () => {
-    setPending(true);
-    setTimeout(() => {
-      setPending(false);
-      setStage("done");
-    }, 900);
-  };
-
-  const title =
-    stage === "list"
-      ? "Помощь прямо сейчас"
-      : stage === "done"
-      ? "Готово"
-      : picked?.title || "";
+  const title = stage === "list" ? "Помощь прямо сейчас" : picked?.title || "";
 
   return (
     <div
@@ -95,9 +81,9 @@ export default function HelpModal({ onClose, focus = "list" }) {
               <button
                 className="funnel__back"
                 type="button"
-                onClick={() => setStage(stage === "done" ? "list" : stage === "pay" ? "product" : "list")}
+                onClick={() => setStage("list")}
               >
-                <ArrowLeft /> {stage === "done" ? "К списку" : "Назад"}
+                <ArrowLeft /> К списку
               </button>
             )}
             <h2 id="help-title">{title}</h2>
@@ -166,32 +152,6 @@ export default function HelpModal({ onClose, focus = "list" }) {
             </>
           )}
 
-          {stage === "pay" && picked && (
-            <section className="section">
-              <h3>Оплата</h3>
-              <p>
-                {picked.title} — {money(picked.price)}. Спишем с карты, привязанной к аккаунту.
-              </p>
-              <div className="help-pay-card">
-                <span>Карта •••• 4242</span>
-                <button className="link" type="button">
-                  Другая карта
-                </button>
-              </div>
-              <p className="card__hint">Демо-экран: деньги не списываются.</p>
-            </section>
-          )}
-
-          {stage === "done" && picked && (
-            <section className="section">
-              <div className="done__mark" aria-hidden="true">
-                <CheckIcon />
-              </div>
-              <p style={{ textAlign: "center" }}>
-                «{picked.title}» уже ваш. {picked.deliver}
-              </p>
-            </section>
-          )}
         </div>
 
         <div className="modal__footer">
@@ -206,28 +166,16 @@ export default function HelpModal({ onClose, focus = "list" }) {
               <button className="link" type="button" onClick={() => setStage("list")}>
                 Посмотреть другое
               </button>
-              <button className="btn btn--primary" type="button" onClick={() => setStage("pay")}>
+              <button
+                className="btn btn--primary"
+                type="button"
+                onClick={() => {
+                  onBuy(picked);
+                  onClose();
+                }}
+              >
                 <Mark />
                 Забрать за {money(picked.price)}
-              </button>
-            </>
-          )}
-
-          {stage === "pay" && picked && (
-            <button className="btn btn--primary" type="button" disabled={pending} onClick={pay}>
-              <Mark />
-              {pending ? "Проводим оплату…" : `Оплатить ${money(picked.price)}`}
-            </button>
-          )}
-
-          {stage === "done" && (
-            <>
-              <button className="link" type="button" onClick={() => setStage("list")}>
-                Забрать что-то ещё
-              </button>
-              <button className="btn btn--primary" type="button" onClick={onClose}>
-                <Mark />
-                Открыть
               </button>
             </>
           )}

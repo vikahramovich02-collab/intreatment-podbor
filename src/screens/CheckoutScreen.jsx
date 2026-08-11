@@ -3,6 +3,7 @@ import Header from "../components/Header.jsx";
 import { HoldTimer } from "../components/BookingSummary.jsx";
 import { ArrowLeft, ChevronRight, CardIcon } from "../components/icons.jsx";
 import { money } from "../lib/format.js";
+import { orderLine } from "../lib/order.js";
 
 const PROMO = { FIRST: 0.1 }; // демо-промокод: −10%
 
@@ -14,7 +15,7 @@ const METHODS = [
 
 /* Компактный чек: кто и когда, способ оплаты, стоимость, промокод, итог.
    Данные карты просим только на шаге оплаты, чтобы экран не пугал формой. */
-export default function CheckoutScreen({ booking, holdStartedAt, onBack, onPaid }) {
+export default function CheckoutScreen({ order, holdStartedAt, account, onBack, onPaid }) {
   const [method, setMethod] = useState("ru");
   const [promoOpen, setPromoOpen] = useState(false);
   const [promo, setPromo] = useState("");
@@ -24,12 +25,13 @@ export default function CheckoutScreen({ booking, holdStartedAt, onBack, onPaid 
   const [card, setCard] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvc, setCvc] = useState("");
-  const [email, setEmail] = useState("");
+  // Почта приходит из Яндекс ID / VK ID и считается подтверждённой, но её можно изменить
+  const [email, setEmail] = useState(account?.email || "");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
-  const { person, day, slot } = booking;
-  const total = Math.round(person.price * (1 - discount));
+  const isSession = order.kind === "session";
+  const total = Math.round(order.price * (1 - discount));
   const needsCard = method !== "sbp";
 
   const applyPromo = () => {
@@ -99,25 +101,36 @@ export default function CheckoutScreen({ booking, holdStartedAt, onBack, onPaid 
 
   return (
     <div className="app">
-      <Header step="checkout" onBack={onBack} backLabel="Назад" />
+      <Header onBack={onBack} backLabel="Назад" />
 
       <main className="funnel">
         <div className="column">
           <div className="checkout">
             <button className="funnel__back" type="button" onClick={onBack}>
-              <ArrowLeft /> К регистрации
+              <ArrowLeft /> В кабинет
             </button>
+
+            <div className="checkout__head">
+              <h1 className="funnel__title">
+                {isSession ? "Оплата встречи" : "Оплата материала"}
+              </h1>
+              <p className="funnel__sub">
+                {isSession
+                  ? "Запись подтверждается после оплаты. Отменить или перенести встречу можно не позднее чем за 24 часа."
+                  : "После оплаты материал появится в личном кабинете — им можно пользоваться в любой момент."}
+              </p>
+            </div>
 
             <form className="checkout__card" onSubmit={submit} noValidate>
               <div className="checkout__person">
-                <span className="avatar">
-                  <img src={person.photo} alt="" />
-                </span>
-                <div>
-                  <strong>{person.name}</strong>
-                  <span>
-                    {day.label} в {slot}
+                {isSession && (
+                  <span className="avatar">
+                    <img src={order.person.photo} alt="" />
                   </span>
+                )}
+                <div>
+                  <strong>{isSession ? order.person.name : order.title}</strong>
+                  <span>{order.meta}</span>
                 </div>
               </div>
 
@@ -180,7 +193,7 @@ export default function CheckoutScreen({ booking, holdStartedAt, onBack, onPaid 
               )}
 
               <label className="field">
-                <span>Email для чека</span>
+                <span>Email для чека{account?.email ? " (из вашего аккаунта)" : ""}</span>
                 <input
                   type="email"
                   autoComplete="email"
@@ -192,8 +205,8 @@ export default function CheckoutScreen({ booking, holdStartedAt, onBack, onPaid 
               </label>
 
               <div className="checkout__row">
-                <span>Сессия, 50 мин</span>
-                <span>{money(person.price)}</span>
+                <span>{orderLine(order)}</span>
+                <span>{money(order.price)}</span>
               </div>
 
               {promoOpen ? (
@@ -242,12 +255,12 @@ export default function CheckoutScreen({ booking, holdStartedAt, onBack, onPaid 
               </button>
 
               <p className="legal">
-                Записываясь на сессию, вы соглашаетесь с условиями сервиса и политикой
-                конфиденциальности. Это демо-экран — деньги не списываются.
+                Оплачивая, вы соглашаетесь с условиями сервиса и политикой конфиденциальности.
+                Это демо-экран — деньги не списываются.
               </p>
             </form>
 
-            <HoldTimer startedAt={holdStartedAt} />
+            {holdStartedAt && <HoldTimer startedAt={holdStartedAt} />}
           </div>
         </div>
       </main>

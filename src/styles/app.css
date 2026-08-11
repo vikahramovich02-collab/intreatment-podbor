@@ -395,54 +395,53 @@ button {
   width: clamp(20px, 1.5vw, 27px);
   height: clamp(11px, 0.78vw, 14px);
 }
+.header__nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 0.83vw, 16px);
+}
+.header__nav button {
+  padding: clamp(6px, 0.5vw, 9px) clamp(6px, 0.5vw, 10px);
+  font-size: clamp(11px, 0.83vw, 15px);
+  color: var(--ink);
+  transition: opacity 0.16s var(--ease);
+}
+.header__nav button:hover {
+  opacity: 0.6;
+}
+.header__nav .is-narrow {
+  display: none;
+}
+
+.header__right {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 0.9vw, 18px);
+  margin-left: auto;
+}
+.header__hint {
+  font-size: clamp(11px, 0.83vw, 15px);
+  color: var(--ink);
+}
+
+/* Кнопки в шапке мельче, чем в теле экрана — как на сайте */
+.header .btn {
+  height: clamp(32px, 2.5vw, 46px);
+  padding: 0 clamp(11px, 0.94vw, 17px);
+  border-radius: var(--r-sm);
+  font-size: clamp(11px, 0.83vw, 15px);
+  gap: clamp(6px, 0.52vw, 9px);
+}
+.header .btn .mark {
+  width: clamp(20px, 1.5vw, 27px);
+  height: clamp(11px, 0.78vw, 14px);
+}
 .header__progress {
   display: flex;
   justify-content: center;
   padding: 10px 0 12px;
   border-top: 1px solid var(--line);
   margin: 0 calc(-1 * clamp(16px, 2.55vw, 46px));
-}
-
-/* Прогресс воронки */
-.steps {
-  display: flex;
-  align-items: center;
-  gap: clamp(6px, 0.66vw, 12px);
-  font-size: clamp(10px, 0.73vw, 13px);
-  color: var(--ghost);
-}
-.steps__item {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-.steps__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--line-strong);
-}
-.steps__check {
-  display: grid;
-  place-items: center;
-  width: 12px;
-  height: 12px;
-  color: var(--ghost);
-}
-.steps__check svg {
-  width: 12px;
-  height: 12px;
-}
-.steps__item.is-active {
-  color: var(--ink);
-}
-.steps__item.is-active .steps__dot {
-  background: var(--ink);
-}
-.steps__sep {
-  width: 18px;
-  height: 1px;
-  background: var(--line);
 }
 
 /* ── 4. Экран чата ─────────────────────────────────────────── */
@@ -761,7 +760,9 @@ button {
 }
 
 .composer__primary {
-  height: 52px;
+  min-height: 44px;
+  height: auto;
+  padding-block: 10px;
   font-size: 15px;
 }
 
@@ -904,25 +905,37 @@ button {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 14px;
+  gap: 18px;
   animation: msg-in 0.4s var(--ease) both;
 }
 .rec .msg__head {
   margin-bottom: 0;
 }
+.rec__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  max-width: 620px;
+  padding: 20px;
+  border: 1px solid var(--card-line);
+  border-radius: var(--r-lg);
+  background: var(--paper);
+}
 .rec__head {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 .rec__name {
-  font-size: 16px;
-  font-weight: 400;
-  color: var(--ink-80);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--ink);
 }
 .rec__role {
-  font-size: 15px;
-  color: var(--ink-soft);
+  font-size: 14px;
+  color: var(--ghost);
 }
 /* Стоимость — обведённой плашкой, без заливки */
 .rec__price {
@@ -984,13 +997,15 @@ button {
   opacity: 1;
 }
 .rec__videohint {
-  margin-top: -8px;
+  margin-top: -12px;
   font-size: 12px;
   color: var(--ghost);
 }
 
 .rec__about {
-  max-width: 550px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-80);
 }
 .rec__about--second {
   margin-top: -6px;
@@ -1212,6 +1227,22 @@ button {
 .cal__day[disabled] {
   opacity: 0.55;
   pointer-events: none;
+}
+
+/* Отпуск специалиста и лист ожидания слотов */
+.cal__vacation {
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.waitlist {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: var(--r-md);
+  background: var(--picked-bg);
 }
 
 .slots {
@@ -1472,6 +1503,17 @@ button {
   flex-direction: column;
   gap: 14px;
 }
+.checkout__head {
+  margin-bottom: 6px;
+}
+.checkout__head .funnel__title {
+  font-size: clamp(24px, 2.6vw, 32px);
+}
+.checkout__head .funnel__sub {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
 .checkout__card {
   display: flex;
   flex-direction: column;
@@ -1919,11 +1961,6 @@ button {
   }
   .header__right {
     gap: 8px;
-  }
-  /* В узкой строке помещается только текущий шаг */
-  .steps__sep,
-  .steps__item:not(.is-active) {
-    display: none;
   }
 }
 

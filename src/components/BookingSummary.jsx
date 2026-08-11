@@ -34,38 +34,56 @@ export function HoldTimer({ startedAt, minutes = 20 }) {
   );
 }
 
-export default function BookingSummary({ booking, total, children }) {
-  const { person, day, slot } = booking;
+export default function BookingSummary({ order, total, children }) {
+  const isSession = order.kind === "session";
   return (
     <div className="summary__card">
       <div className="summary__person">
-        <span className="avatar">
-          <img src={person.photo} alt="" />
-        </span>
-        <div>
-          <strong>{person.name}</strong>
-          <span>{person.role}</span>
-        </div>
+        {isSession ? (
+          <>
+            <span className="avatar">
+              <img src={order.person.photo} alt="" />
+            </span>
+            <div>
+              <strong>{order.person.name}</strong>
+              <span>{order.person.role}</span>
+            </div>
+          </>
+        ) : (
+          <div>
+            <strong>{order.title}</strong>
+            <span>{order.product.kind}</span>
+          </div>
+        )}
       </div>
 
       <dl className="summary__rows">
-        <div className="summary__row">
-          <dt>Дата</dt>
-          <dd>{day.label}</dd>
-        </div>
-        <div className="summary__row">
-          <dt>Время</dt>
-          <dd>{slot}</dd>
-        </div>
-        <div className="summary__row">
-          <dt>Формат</dt>
-          <dd>Онлайн · 50 минут</dd>
-        </div>
+        {isSession ? (
+          <>
+            <div className="summary__row">
+              <dt>Дата</dt>
+              <dd>{order.day.label}</dd>
+            </div>
+            <div className="summary__row">
+              <dt>Время</dt>
+              <dd>{order.slot}</dd>
+            </div>
+            <div className="summary__row">
+              <dt>Формат</dt>
+              <dd>Онлайн · 50 минут</dd>
+            </div>
+          </>
+        ) : (
+          <div className="summary__row">
+            <dt>Что получите</dt>
+            <dd>{order.product.meta}</dd>
+          </div>
+        )}
       </dl>
 
       <div className="summary__total">
         <span>К оплате</span>
-        <strong>{money(total ?? person.price)}</strong>
+        <strong>{money(total ?? order.price)}</strong>
       </div>
 
       {children}

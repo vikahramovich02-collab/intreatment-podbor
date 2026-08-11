@@ -5,20 +5,21 @@ import CheckoutScreen from "./screens/CheckoutScreen.jsx";
 import DoneScreen from "./screens/DoneScreen.jsx";
 import CabinetScreen from "./screens/CabinetScreen.jsx";
 import SafetyScreen from "./screens/SafetyScreen.jsx";
+import { sessionOrder, productOrder } from "./lib/order.js";
 
 /* Путь до входа на платформу: chat → register → cabinet.
    Оплата происходит уже внутри платформы: cabinet → checkout → done → cabinet.
    Плюс ветка safety, если в чате прозвучал кризис. */
 export default function App() {
   const [screen, setScreen] = useState("chat");
-  const [booking, setBooking] = useState(null);
+  const [order, setOrder] = useState(null);
   const [holdStartedAt, setHoldStartedAt] = useState(null);
   const [account, setAccount] = useState(null);
   const [payment, setPayment] = useState(null);
 
   const restart = () => {
     setScreen("chat");
-    setBooking(null);
+    setOrder(null);
     setHoldStartedAt(null);
     setAccount(null);
     setPayment(null);
@@ -29,9 +30,8 @@ export default function App() {
   if (screen === "register")
     return (
       <RegisterScreen
-        booking={booking}
+        order={order}
         holdStartedAt={holdStartedAt}
-        onStep={(id) => id === "chat" && setScreen("chat")}
         onBack={() => setScreen("chat")}
         onDone={(user) => {
           setAccount(user);
@@ -43,8 +43,9 @@ export default function App() {
   if (screen === "checkout")
     return (
       <CheckoutScreen
-        booking={booking}
+        order={order}
         holdStartedAt={holdStartedAt}
+        account={account}
         onBack={() => setScreen("cabinet")}
         onPaid={(result) => {
           setPayment(result);
@@ -56,7 +57,7 @@ export default function App() {
   if (screen === "done")
     return (
       <DoneScreen
-        booking={booking}
+        order={order}
         payment={payment}
         account={account}
         onEnter={() => setScreen("cabinet")}
@@ -67,7 +68,7 @@ export default function App() {
   if (screen === "cabinet")
     return (
       <CabinetScreen
-        booking={booking}
+        order={order}
         payment={payment}
         holdStartedAt={holdStartedAt}
         onPay={() => setScreen("checkout")}
@@ -78,10 +79,15 @@ export default function App() {
   return (
     <ChatScreen
       onCrisis={() => setScreen("safety")}
-      onLogin={() => booking && setScreen("cabinet")}
+      onLogin={() => order && setScreen("cabinet")}
       onBook={(next) => {
-        setBooking(next);
+        setOrder(sessionOrder(next));
         setHoldStartedAt(Date.now());
+        setScreen("register");
+      }}
+      onBuyProduct={(product) => {
+        setOrder(productOrder(product));
+        setHoldStartedAt(null);
         setScreen("register");
       }}
     />

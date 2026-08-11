@@ -15,7 +15,7 @@ import {
   specialistsOf,
 } from "../data/categories.js";
 import { specialistsByCodes } from "../data/specialists.js";
-import { now, nearestSlotLabel } from "../lib/format.js";
+import { now, nearestSlotLabel, dative } from "../lib/format.js";
 
 const GREETING =
   "Здравствуйте!\n\nПомогу подобрать специалиста, с которым будет спокойно начать. Это займёт около 3 минут — можно выбирать варианты или писать своими словами.";
@@ -26,7 +26,6 @@ const ASK_RECOGNIZE = "Узнаёте себя в этом?";
 
 const DUTY = { signature: "Дежурный психолог Дарья" };
 const BACK_TO_CATEGORIES = { label: "Вернуться к категориям", toCategories: true };
-const NEXT_SPECIALIST = { label: "Показать другого специалиста", nextPerson: true };
 
 /* Свободный текст сопоставляем с категориями алгоритма по ключевым словам */
 const KEYWORDS = [
@@ -48,7 +47,7 @@ const categoryOfText = (text) => {
 const labelOfCategory = (code) =>
   (MAIN_CATEGORIES.find(([, key]) => key === code) || [])[0] || "";
 
-export default function ChatScreen({ onBook, onLogin, onCrisis }) {
+export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) {
   const [messages, setMessages] = useState([
     { role: "assistant", text: GREETING, time: now(), topicId: null },
     { role: "assistant", text: ASK_NAME, time: now(), topicId: null },
@@ -123,22 +122,23 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
     setStage("matched");
     setTopics((prev) =>
       prev.map((topic) =>
-        topic.id === forTopic ? { ...topic, personName: people[index].name } : topic
+        topic.id === forTopic
+          ? { ...topic, personName: people.map((item) => item.name.split(" ")[0]).join(", ") }
+          : topic
       )
     );
+    // Показываем всех подходящих по v-коду (в алгоритме их до трёх)
+    const lead =
+      people.length > 1
+        ? `Вот кто может подойти под ваш запрос — ${people.length} специалиста.`
+        : "Вот кто может подойти под ваш запрос.";
     setTyping(true);
     const timer = setTimeout(() => {
       setTyping(false);
       setMessages((prev) => [
         ...prev,
-        {
-          role: "assistant",
-          text: withName("Вот кто может подойти под ваш запрос."),
-          time: now(),
-          topicId: forTopic,
-          ...extra,
-        },
-        { role: "rec", person: people[index], topicId: forTopic },
+        { role: "assistant", text: withName(lead), time: now(), topicId: forTopic, ...extra },
+        ...people.map((person) => ({ role: "rec", person, topicId: forTopic })),
       ]);
     }, 750);
     timers.current.push(timer);
@@ -228,21 +228,6 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
       return;
     }
 
-    if (stage === "matched" && option.nextPerson) {
-      const next = (matchIndex + 1) % matches.length;
-      setMatchIndex(next);
-      setTopics((prev) =>
-        prev.map((topic) =>
-          topic.id === topicId ? { ...topic, personName: matches[next].name } : topic
-        )
-      );
-      say(withName("Показываю другого специалиста."), { topicId });
-      const timer = setTimeout(
-        () => setMessages((prev) => [...prev, { role: "rec", person: matches[next], topicId }]),
-        700
-      );
-      timers.current.push(timer);
-    }
   };
 
   const sendText = (value) => {
@@ -320,12 +305,11 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
       return { options: [{ label: "Пропустить", skip: true }], placeholder: "Ваше имя.." };
     }
     if (stage === "category") {
+      // «Скорая помощь» и дежурный психолог живут в шапке, в меню их не дублируем
       return {
-        options: MAIN_CATEGORIES.map(([label, code]) => ({
-          label,
-          code,
-          duty: code === "duty_psychologist",
-        })),
+        options: MAIN_CATEGORIES.filter(([, code]) => code.startsWith("p")).map(
+          ([label, code]) => ({ label, code })
+        ),
       };
     }
     if (stage === "sub") {
@@ -351,13 +335,15 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
     }
     const person = matches[matchIndex];
     return {
-      options: [NEXT_SPECIALIST],
+      options: [],
       back: BACK_TO_CATEGORIES,
       primaryAction: person
         ? {
             label: (() => {
               const nearest = nearestSlotLabel(person);
-              return nearest ? `Записаться на ${nearest}` : "Записаться";
+              return nearest
+                ? `Записаться к ${dative(person.name)} на ${nearest}`
+                : `Записаться к ${dative(person.name)}`;
             })(),
             onClick: () => openProfile(person, "schedule"),
           }
@@ -420,7 +406,9 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
         />
       </div>
 
-      {helpOpen && <HelpModal focus={helpOpen} onClose={() => setHelpOpen(false)} />}
+      {helpOpen && (
+        <HelpModal focus={helpOpen} onBuy={onBuyProduct} onClose={() => setHelpOpen(false)} />
+      )}
 
       {modal && (
         <ProfileModal

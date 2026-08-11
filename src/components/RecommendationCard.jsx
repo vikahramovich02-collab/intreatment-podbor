@@ -75,19 +75,21 @@ export default function RecommendationCard({ person, onOpen, time }) {
       <VideoCircle person={person} />
       {person.video && <p className="rec__videohint">Видео-визитка · 30 секунд</p>}
 
-      <div className="rec__head">
-        <b className="rec__name">{person.name}</b>
-        <span className="rec__role">{person.role}</span>
+      {/* Инфо о психологе — отдельной карточкой; запись кнопкой под чатом */}
+      <div className="rec__card">
+        <div className="rec__head">
+          <b className="rec__name">{person.name}</b>
+          <span className="rec__role">{person.role}</span>
+        </div>
+
+        <p className="rec__about">{person.about}</p>
+
+        <button className="link" type="button" onClick={() => onOpen(person, "about")}>
+          Подробнее о психологе
+        </button>
+
+        <span className="rec__price">{money(person.price)} • 50 минут</span>
       </div>
-
-      <p className="msg__body rec__about">{person.about}</p>
-
-      {/* Запись — кнопкой в зоне действий под чатом, здесь профиль и стоимость */}
-      <button className="link" type="button" onClick={() => onOpen(person, "about")}>
-        Подробнее о психологе
-      </button>
-
-      <span className="rec__price">{money(person.price)} • 50 минут</span>
 
       {time && <time className="msg__time">{time}</time>}
     </article>

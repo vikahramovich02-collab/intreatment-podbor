@@ -1,6 +1,14 @@
 /* Сайт живёт в подпапке GitHub Pages, поэтому пути к файлам строим от базы сборки */
 export const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
 
+/* «к Диане», «к Юлии» — для подписи кнопки записи */
+export function dative(name) {
+  const first = name.split(" ")[0];
+  if (first.endsWith("ия")) return `${first.slice(0, -1)}и`;
+  if (first.endsWith("а") || first.endsWith("я")) return `${first.slice(0, -1)}е`;
+  return first;
+}
+
 export const money = (value) => `${value.toLocaleString("ru-RU")} ₽`;
 
 /* Часовые пояса клиентов. Расписание психологов хранится в минском времени (UTC+3).
@@ -46,7 +54,8 @@ export function buildCalendar(person, weeks = 2) {
     const date = new Date(start);
     date.setDate(start.getDate() + i);
     const dow = date.getDay();
-    let slots = person.slots[dow] || [];
+    const onVacation = person.vacationUntil && date <= new Date(person.vacationUntil);
+    let slots = onVacation ? [] : person.slots[dow] || [];
     if (i === 0) {
       // Сегодня показываем только то, на что реально успеть записаться (минимум за 2 часа).
       const edge = new Date();
@@ -58,6 +67,7 @@ export function buildCalendar(person, weeks = 2) {
       });
     }
     days.push({
+      onVacation: Boolean(onVacation),
       key: date.toISOString().slice(0, 10),
       date,
       dow: DOW_SHORT[dow],
@@ -83,10 +93,21 @@ export function weekRange(days) {
 }
 
 /* «сегодня» / «завтра» / «пн, 10 августа» — время выбирается уже в расписании */
+/* «до 25 августа» — для подписи об отпуске */
+export function vacationLabel(person) {
+  if (!person.vacationUntil) return null;
+  const until = new Date(person.vacationUntil);
+  if (until < new Date()) return null;
+  return `${until.getDate()} ${MONTHS[until.getMonth()]}`;
+}
+
 export function nearestSlotLabel(person) {
   const days = buildCalendar(person, 2);
   const day = days.find((item) => item.slots.length);
   if (!day) return null;
   const index = days.indexOf(day);
-  return index === 0 ? "сегодня" : index === 1 ? "завтра" : day.label.toLowerCase();
+  const date = `${day.date.getDate()} ${MONTHS[day.date.getMonth()]}`;
+  if (index === 0) return `сегодня, ${date}`;
+  if (index === 1) return `завтра, ${date}`;
+  return day.label.toLowerCase();
 }

@@ -2,12 +2,13 @@ import Header from "../components/Header.jsx";
 import { CheckIcon } from "../components/icons.jsx";
 import { money } from "../lib/format.js";
 
-export default function DoneScreen({ booking, payment, onEnter, onRestart }) {
-  const { person, day, slot, name } = booking;
+export default function DoneScreen({ order, payment, onEnter, onRestart }) {
+  const isSession = order.kind === "session";
+  const { name } = order;
 
   return (
     <div className="app">
-      <Header step="done" />
+      <Header />
 
       <main className="funnel">
         <div className="column">
@@ -16,33 +17,34 @@ export default function DoneScreen({ booking, payment, onEnter, onRestart }) {
               <CheckIcon />
             </div>
             <h1 className="funnel__title">
-              {name ? `${name}, встреча запланирована` : "Встреча запланирована"}
+              {isSession
+                ? name
+                  ? `${name}, встреча запланирована`
+                  : "Встреча запланирована"
+                : "Материал у вас"}
             </h1>
             <p className="funnel__sub" style={{ margin: "10px auto 0" }}>
-              Оплата прошла, время закреплено за вами. Ссылку на видеовстречу и напоминание
-              пришлём заранее.
+              {isSession
+                ? "Оплата прошла, время закреплено за вами. Ссылку на видеовстречу и напоминание пришлём заранее."
+                : "Оплата прошла — материал доступен в личном кабинете в любой момент."}
             </p>
 
             <div className="done__card">
               <div className="summary__person">
-                <span className="avatar">
-                  <img src={person.photo} alt="" />
-                </span>
+                {isSession && (
+                  <span className="avatar">
+                    <img src={order.person.photo} alt="" />
+                  </span>
+                )}
                 <div>
-                  <strong>{person.name}</strong>
-                  <span>{person.role}</span>
+                  <strong>{isSession ? order.person.name : order.title}</strong>
+                  <span>{isSession ? order.person.role : order.product.kind}</span>
                 </div>
               </div>
               <dl className="summary__rows" style={{ borderBottom: "none" }}>
                 <div className="summary__row">
-                  <dt>Когда</dt>
-                  <dd>
-                    {day.label}, {slot}
-                  </dd>
-                </div>
-                <div className="summary__row">
-                  <dt>Формат</dt>
-                  <dd>Онлайн · 50 минут</dd>
+                  <dt>{isSession ? "Когда" : "Что получили"}</dt>
+                  <dd>{isSession ? `${order.day.label}, ${order.slot}` : order.product.meta}</dd>
                 </div>
                 <div className="summary__row">
                   <dt>Оплачено</dt>
@@ -56,7 +58,7 @@ export default function DoneScreen({ booking, payment, onEnter, onRestart }) {
                 Войти на платформу
               </button>
               <button className="btn btn--ghost" type="button" onClick={onRestart}>
-                Пройти подбор заново
+                {isSession ? "Пройти подбор заново" : "Вернуться к подбору"}
               </button>
             </div>
           </div>

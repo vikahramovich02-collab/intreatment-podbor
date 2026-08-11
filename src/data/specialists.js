@@ -28,6 +28,8 @@ export const specialists = [
   },
   {
     id: "inna",
+    couplePrice: 5500,
+    coupleDuration: "1 час 20 минут",
     name: "Инна Башкова",
     initials: "ИБ",
     photo: asset("img/02-person-2.jpg"),
@@ -39,6 +41,7 @@ export const specialists = [
   },
   {
     id: "diana",
+    vacationUntil: "2026-08-25", // отпуск: дни недоступны для записи
     name: "Диана Протас",
     initials: "ДП",
     photo: asset("img/06-person-6.jpg"),
@@ -50,6 +53,8 @@ export const specialists = [
   },
   {
     id: "maryana",
+    couplePrice: 5500,
+    coupleDuration: "1 час 20 минут",
     name: "Марьяна Марковская",
     initials: "ММ",
     photo: asset("img/03-person-3.jpg"),

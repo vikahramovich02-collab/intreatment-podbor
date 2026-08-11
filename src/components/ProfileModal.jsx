@@ -4,7 +4,7 @@ import {
   money,
   buildCalendar,
   weekRange,
-  quoted,
+  vacationLabel,
   ZONES,
   zoneLabel,
   shiftSlot,
@@ -85,6 +85,11 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
   };
 
   /* Ближайшее свободное время — уже в поясе клиента */
+  const vacation = vacationLabel(person);
+  const [waitEmail, setWaitEmail] = useState("");
+  const [waitSent, setWaitSent] = useState(false);
+  const hasAnySlot = days.some((day) => day.slots.length);
+
   const nearest = (() => {
     const index = days.findIndex((day) => day.slots.length);
     if (index < 0) return null;
@@ -157,6 +162,10 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
               </button>
             </div>
 
+            {vacation && (
+              <p className="cal__vacation">Психолог в отпуске до {vacation}</p>
+            )}
+
             <div className="cal__grid">
               {visibleDays.map((day, index) => {
                 const globalIndex = week * 7 + index;
@@ -175,11 +184,46 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
                   >
                     <small>{day.isToday ? "сег" : day.dow}</small>
                     <span>{day.day}</span>
-                    <em>{free ? `${day.slots.length} окн.` : "—"}</em>
+                    <em>{free ? `${day.slots.length} окн.` : day.onVacation ? "отпуск" : "—"}</em>
                   </button>
                 );
               })}
             </div>
+
+            {!hasAnySlot && (
+              <div className="waitlist">
+                {waitSent ? (
+                  <p className="card__hint" role="status">
+                    Готово — сообщим на {waitEmail}, когда появятся свободные даты.
+                  </p>
+                ) : (
+                  <>
+                    <p className="card__hint" style={{ marginTop: 0 }}>
+                      Свободных дат сейчас нет. Оставьте почту — напишем, когда они появятся.
+                    </p>
+                    <div className="inline-field">
+                      <label className="field" style={{ flex: 1 }}>
+                        <span className="sr-only">Почта для уведомления</span>
+                        <input
+                          type="email"
+                          value={waitEmail}
+                          onChange={(event) => setWaitEmail(event.target.value)}
+                          placeholder="name@example.com"
+                        />
+                      </label>
+                      <button
+                        className="btn btn--outline"
+                        type="button"
+                        disabled={!waitEmail.includes("@")}
+                        onClick={() => setWaitSent(true)}
+                      >
+                        Сообщить о новых датах
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
             <div className="slots">
               <div className="slots__title">
