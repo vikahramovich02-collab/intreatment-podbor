@@ -134,17 +134,20 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
         <div className="modal__body">
           <section className="section">
             <h3>О специалисте</h3>
-            <p>{person.about}</p>
+            {/* Полный текст профиля перенесён из Telegraph/Teletype, ничего не сворачиваем */}
+            {(person.profile || person.about).split("\n\n").map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))}
             <p>Формат работы: {person.format.toLowerCase()}, сессия 50 минут.</p>
             <p className="modal__links">
-              {person.profileUrl && (
-                <a className="link" href={person.profileUrl} target="_blank" rel="noreferrer">
-                  Полный профиль
-                </a>
-              )}
               <a className="link" href="#diplomas">
                 Документы об образовании
               </a>
+              {person.profileUrl && (
+                <a className="link" href={person.profileUrl} target="_blank" rel="noreferrer">
+                  Профиль на Teletype
+                </a>
+              )}
             </p>
           </section>
 
