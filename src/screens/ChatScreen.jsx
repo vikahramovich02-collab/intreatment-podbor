@@ -16,7 +16,7 @@ import {
   specialistsOf,
 } from "../data/categories.js";
 import { specialistsByCodes } from "../data/specialists.js";
-import { now, nearestSlotLabel, dative } from "../lib/format.js";
+import { now, nearestSlotLabel, dative, money } from "../lib/format.js";
 
 const GREETING =
   "Здравствуйте!\n\nПомогу подобрать специалиста, с которым будет спокойно начать. Это займёт около 3 минут — можно выбирать варианты или писать своими словами.";
@@ -73,7 +73,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
   const [topics, setTopics] = useState([]);
   const [topicId, setTopicId] = useState(null);
   const [visibleTopic, setVisibleTopic] = useState(null);
-  const [visiblePerson, setVisiblePerson] = useState(null); // карточка, на которой стоит скролл
+  const [visibleCard, setVisibleCard] = useState(null); // карточка, на которой стоит скролл
 
   const threadRef = useRef(null);
   const nodeRefs = useRef({});
@@ -295,22 +295,48 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
     const edge = node.scrollTop + 140;
     const middle = node.scrollTop + node.clientHeight / 2;
     let current = null;
-    let person = null;
+    let card = null;
     messages.forEach((message, index) => {
       const item = nodeRefs.current[index];
       if (!item) return;
       if (message.topicId && item.offsetTop <= edge) current = message.topicId;
-      // кнопка записи должна относиться к тому специалисту, что сейчас перед глазами
-      if (message.role === "rec" && item.offsetTop <= middle) person = message.person;
+      // действие внизу относится к той карточке, что сейчас перед глазами
+      if ((message.role === "rec" || message.role === "product") && item.offsetTop <= middle) {
+        card = message;
+      }
     });
     setVisibleTopic(current);
-    setVisiblePerson(person);
+    setVisibleCard(card);
   };
 
   const scrollToTopic = (topic) => {
     const index = messages.findIndex((message) => message.topicId === topic.id);
     nodeRefs.current[index]?.scrollIntoView({ block: "start", behavior: "smooth" });
   };
+
+  /* Главное действие под чатом — по карточке, на которой стоит скролл */
+  const primaryAction = (() => {
+    // пока не прокручивали — ориентируемся на последнюю карточку в ленте
+    const lastCard = [...messages]
+      .reverse()
+      .find((message) => message.role === "rec" || message.role === "product");
+    const card = visibleCard || lastCard;
+    if (card?.role === "product") {
+      return {
+        label: `Забрать за ${money(card.product.price)}`,
+        onClick: () => onBuyProduct(card.product),
+      };
+    }
+    const person = card?.person || (stage === "matched" ? matches[matchIndex] : null);
+    if (!person) return null;
+    const nearest = nearestSlotLabel(person);
+    return {
+      label: nearest
+        ? `Записаться к ${dative(person.name)} на ${nearest}`
+        : `Записаться к ${dative(person.name)}`,
+      onClick: () => openProfile(person, "schedule"),
+    };
+  })();
 
   /* ── Что показываем в композере ── */
   const composer = (() => {
@@ -346,22 +372,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
         back: BACK_TO_CATEGORIES,
       };
     }
-    const person = visiblePerson || matches[matchIndex];
-    return {
-      options: [NEW_TOPIC],
-      back: BACK_TO_CATEGORIES,
-      primaryAction: person
-        ? {
-            label: (() => {
-              const nearest = nearestSlotLabel(person);
-              return nearest
-                ? `Записаться к ${dative(person.name)} на ${nearest}`
-                : `Записаться к ${dative(person.name)}`;
-            })(),
-            onClick: () => openProfile(person, "schedule"),
-          }
-        : null,
-    };
+    return { options: [NEW_TOPIC], back: BACK_TO_CATEGORIES };
   })();
 
   return (
@@ -391,7 +402,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
               if (message.role === "product") {
                 return (
                   <div key={index} ref={setNode}>
-                    <ProductCard product={message.product} onBuy={onBuyProduct} />
+                    <ProductCard product={message.product} />
                   </div>
                 );
               }
@@ -418,6 +429,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
 
         <Composer
           {...composer}
+          primaryAction={primaryAction}
           draft={draft}
           disabled={typing}
           onPick={pickOption}

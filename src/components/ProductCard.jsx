@@ -3,7 +3,7 @@ import { money } from "../lib/format.js";
 
 /* Выбранный в попапе материал приходит в ленту как сообщение от InTreatment —
    дальше он покупается тем же путём, что и сессия. */
-export default function ProductCard({ product, onBuy, time }) {
+export default function ProductCard({ product, time }) {
   return (
     <article className="msg rec">
       <div className="msg__head">
@@ -27,13 +27,7 @@ export default function ProductCard({ product, onBuy, time }) {
             <p className="rec__about product__for">{product.forWhom}</p>
           </div>
 
-          <button
-            className="btn btn--primary btn--sm"
-            type="button"
-            onClick={() => onBuy(product)}
-          >
-            Забрать за {money(product.price)}
-          </button>
+          <span className="rec__price">{money(product.price)}</span>
         </div>
       </div>
 
