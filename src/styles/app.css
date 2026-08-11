@@ -938,6 +938,12 @@ button {
   color: var(--ghost);
 }
 /* Стоимость — обведённой плашкой, без заливки */
+.rec__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .product__for {
   color: var(--ink-soft);
   font-size: 15px;

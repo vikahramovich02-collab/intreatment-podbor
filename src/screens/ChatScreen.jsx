@@ -27,6 +27,7 @@ const ASK_RECOGNIZE = "Узнаёте себя в этом?";
 
 const DUTY = { signature: "Дежурный психолог Дарья" };
 const BACK_TO_CATEGORIES = { label: "Вернуться к категориям", toCategories: true };
+const NEW_TOPIC = { label: "Обсудить другую тему", newTopic: true };
 
 /* Свободный текст сопоставляем с категориями алгоритма по ключевым словам */
 const KEYWORDS = [
@@ -72,6 +73,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
   const [topics, setTopics] = useState([]);
   const [topicId, setTopicId] = useState(null);
   const [visibleTopic, setVisibleTopic] = useState(null);
+  const [visiblePerson, setVisiblePerson] = useState(null); // карточка, на которой стоит скролл
 
   const threadRef = useRef(null);
   const nodeRefs = useRef({});
@@ -182,7 +184,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
   const pickOption = (option) => {
     hear(option.label);
 
-    if (option.toCategories) {
+    if (option.toCategories || option.newTopic) {
       goToCategories();
       return;
     }
@@ -291,13 +293,18 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
     const node = threadRef.current;
     if (!node) return;
     const edge = node.scrollTop + 140;
+    const middle = node.scrollTop + node.clientHeight / 2;
     let current = null;
+    let person = null;
     messages.forEach((message, index) => {
       const item = nodeRefs.current[index];
-      if (!item || !message.topicId) return;
-      if (item.offsetTop <= edge) current = message.topicId;
+      if (!item) return;
+      if (message.topicId && item.offsetTop <= edge) current = message.topicId;
+      // кнопка записи должна относиться к тому специалисту, что сейчас перед глазами
+      if (message.role === "rec" && item.offsetTop <= middle) person = message.person;
     });
     setVisibleTopic(current);
+    setVisiblePerson(person);
   };
 
   const scrollToTopic = (topic) => {
@@ -339,9 +346,9 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
         back: BACK_TO_CATEGORIES,
       };
     }
-    const person = matches[matchIndex];
+    const person = visiblePerson || matches[matchIndex];
     return {
-      options: [],
+      options: [NEW_TOPIC],
       back: BACK_TO_CATEGORIES,
       primaryAction: person
         ? {

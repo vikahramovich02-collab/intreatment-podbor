@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Mark } from "./icons.jsx";
-import { money } from "../lib/format.js";
+import { money, nearestSlotLabel } from "../lib/format.js";
 
 /* Видео-визитка психолога: кружок как в телеграме — фото до запуска,
    по клику проигрывается запись со звуком. */
@@ -62,6 +62,7 @@ function VideoCircle({ person }) {
 /* Подобранный психолог приходит в ленту как собственная реплика:
    аватар с именем, видео-кружок, короткий рассказ о себе и действия. */
 export default function RecommendationCard({ person, onOpen, time }) {
+  const nearest = nearestSlotLabel(person);
 
   return (
     <article className="msg rec">
@@ -88,7 +89,12 @@ export default function RecommendationCard({ person, onOpen, time }) {
           Подробнее о психологе
         </button>
 
-        <span className="rec__price">{money(person.price)} • 50 минут</span>
+        <div className="rec__meta">
+          <span className="rec__price">{money(person.price)} • 50 минут</span>
+          <span className="rec__price">
+            {nearest ? `Ближайшая запись: ${nearest}` : "Ближайших дат нет"}
+          </span>
+        </div>
       </div>
 
       {time && <time className="msg__time">{time}</time>}
