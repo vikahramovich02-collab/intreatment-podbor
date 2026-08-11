@@ -136,6 +136,11 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
             <h3>О специалисте</h3>
             <p>{person.about}</p>
             <p>Формат работы: {person.format.toLowerCase()}, сессия 50 минут.</p>
+            <p>
+              <a className="link" href="#diplomas">
+                Документы об образовании
+              </a>
+            </p>
           </section>
 
           <section className="section" ref={scheduleRef}>

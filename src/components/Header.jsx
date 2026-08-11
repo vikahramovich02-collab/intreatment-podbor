@@ -12,11 +12,8 @@ export default function Header({ onBack, backLabel = "Назад", onLogin, onHe
           </button>
         ) : onHelp ? (
           <nav className="header__nav" aria-label="Быстрые разделы">
+            {/* Экстренная помощь живёт первым блоком внутри этого же попапа */}
             <button type="button" onClick={() => onHelp("list")}>
-              <span className="is-wide">Экстренная помощь</span>
-              <span className="is-narrow">Помощь</span>
-            </button>
-            <button className="is-wide-only" type="button" onClick={() => onHelp("products")}>
               Самопомощь
             </button>
           </nav>

@@ -368,9 +368,6 @@ button {
 .header__nav button:hover {
   opacity: 0.6;
 }
-.header__nav .is-narrow {
-  display: none;
-}
 
 .header__right {
   display: flex;
@@ -408,9 +405,6 @@ button {
 }
 .header__nav button:hover {
   opacity: 0.6;
-}
-.header__nav .is-narrow {
-  display: none;
 }
 
 .header__right {
@@ -911,6 +905,10 @@ button {
 .rec .msg__head {
   margin-bottom: 0;
 }
+.rec__lead {
+  margin-bottom: -4px;
+}
+
 .rec__card {
   display: flex;
   flex-direction: column;
@@ -1996,14 +1994,6 @@ button {
 @media (max-width: 700px) {
   .header__inner {
     gap: 10px;
-  }
-  /* Пункт помощи остаётся, но короткой подписью */
-  .header__nav .is-wide,
-  .header__nav .is-wide-only {
-    display: none;
-  }
-  .header__nav .is-narrow {
-    display: inline;
   }
   .header__logo {
     position: static;

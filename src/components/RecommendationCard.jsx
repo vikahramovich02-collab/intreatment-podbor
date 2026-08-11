@@ -61,7 +61,7 @@ function VideoCircle({ person }) {
 
 /* Подобранный психолог приходит в ленту как собственная реплика:
    аватар с именем, видео-кружок, короткий рассказ о себе и действия. */
-export default function RecommendationCard({ person, onOpen, time }) {
+export default function RecommendationCard({ person, lead, onOpen, time }) {
   const nearest = nearestSlotLabel(person);
 
   return (
@@ -72,6 +72,8 @@ export default function RecommendationCard({ person, onOpen, time }) {
         </span>
         <b className="msg__head-name">InTreatment</b>
       </div>
+
+      {lead && <p className="msg__body rec__lead">{lead}</p>}
 
       <VideoCircle person={person} />
       {person.video && <p className="rec__videohint">Видео-визитка · 30 секунд</p>}

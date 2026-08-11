@@ -27,6 +27,7 @@ const ASK_RECOGNIZE = "Узнаёте себя в этом?";
 
 const DUTY = { signature: "Дежурный психолог Дарья" };
 const BACK_TO_CATEGORIES = { label: "Вернуться к категориям", toCategories: true };
+const NEXT_SPECIALIST = { label: "Показать другого специалиста", nextPerson: true };
 const NEW_TOPIC = { label: "Обсудить другую тему", newTopic: true };
 
 /* Свободный текст сопоставляем с категориями алгоритма по ключевым словам */
@@ -129,23 +130,23 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
     setStage("matched");
     setTopics((prev) =>
       prev.map((topic) =>
-        topic.id === forTopic
-          ? { ...topic, personName: people.map((item) => item.name.split(" ")[0]).join(", ") }
-          : topic
+        topic.id === forTopic ? { ...topic, personName: people[index].name } : topic
       )
     );
-    // Показываем всех подходящих по v-коду (в алгоритме их до трёх)
-    const lead =
-      people.length > 1
-        ? `Вот кто может подойти под ваш запрос — ${people.length} специалиста.`
-        : "Вот кто может подойти под ваш запрос.";
+    // Специалистов показываем по очереди — по одному на сообщение
     setTyping(true);
     const timer = setTimeout(() => {
       setTyping(false);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", text: withName(lead), time: now(), topicId: forTopic, ...extra },
-        ...people.map((person) => ({ role: "rec", person, topicId: forTopic })),
+        {
+          role: "rec",
+          person: people[index],
+          lead: withName("Вот кто может подойти под ваш запрос."),
+          time: now(),
+          topicId: forTopic,
+          ...extra,
+        },
       ]);
     }, 750);
     timers.current.push(timer);
@@ -222,6 +223,32 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
 
     if (stage === "subsub") {
       askRecognize(option.vCode);
+      return;
+    }
+
+    if (option.nextPerson) {
+      const next = (matchIndex + 1) % matches.length;
+      setMatchIndex(next);
+      setTopics((prev) =>
+        prev.map((topic) =>
+          topic.id === topicId ? { ...topic, personName: matches[next].name } : topic
+        )
+      );
+      setTyping(true);
+      const timer = setTimeout(() => {
+        setTyping(false);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "rec",
+            person: matches[next],
+            lead: withName("Показываю другого специалиста."),
+            time: now(),
+            topicId,
+          },
+        ]);
+      }, 700);
+      timers.current.push(timer);
       return;
     }
 
@@ -371,7 +398,11 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
         back: BACK_TO_CATEGORIES,
       };
     }
-    return { options: [NEW_TOPIC], back: BACK_TO_CATEGORIES };
+    const hasMore = matches.length > 1;
+    return {
+      options: hasMore ? [NEXT_SPECIALIST, NEW_TOPIC] : [NEW_TOPIC],
+      back: BACK_TO_CATEGORIES,
+    };
   })();
 
   return (
@@ -408,7 +439,11 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
               if (message.role === "rec") {
                 return (
                   <div key={index} ref={setNode}>
-                    <RecommendationCard person={message.person} onOpen={openProfile} />
+                    <RecommendationCard
+                      person={message.person}
+                      lead={message.lead}
+                      onOpen={openProfile}
+                    />
                   </div>
                 );
               }
