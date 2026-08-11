@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Mark, CheckIcon } from "./icons.jsx";
+import { Mark, CheckIcon, ArrowLeft } from "./icons.jsx";
 
 const NONE_LABEL = "Ничего из этого";
 
@@ -12,6 +12,7 @@ export default function Composer({
   draft = null,
   consent = null, // { checked, onChange } — согласие на обработку данных
   primaryAction = null, // главное действие над списком вариантов
+  back = null, // возврат к списку категорий
   onPick,
   onPickMany,
   onText,
@@ -61,9 +62,16 @@ export default function Composer({
   return (
     <div className="composer">
       <div className="column composer__inner">
+        {back && (
+          <button className="composer__back" type="button" disabled={blocked} onClick={() => onPick(back)}>
+            <ArrowLeft />
+            {back.label}
+          </button>
+        )}
+
         {primaryAction && (
           <button
-            className="btn btn--primary btn--lg btn--wide"
+            className="btn btn--quiet btn--wide composer__primary"
             type="button"
             disabled={blocked}
             onClick={primaryAction.onClick}

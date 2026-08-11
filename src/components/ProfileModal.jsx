@@ -10,8 +10,7 @@ import {
   shiftSlot,
 } from "../lib/format.js";
 
-export default function ProfileModal({ match, matchedTags = [], onClose, onChoose, onNext, focus }) {
-  const { person } = match;
+export default function ProfileModal({ person, onClose, onChoose, onNext, focus }) {
   const panelRef = useRef(null);
   const closeRef = useRef(null);
   const scheduleRef = useRef(null);
@@ -85,8 +84,6 @@ export default function ProfileModal({ match, matchedTags = [], onClose, onChoos
     }
   };
 
-  const shared = person.tags.filter((tag) => matchedTags.includes(tag));
-
   /* Ближайшее свободное время — уже в поясе клиента */
   const nearest = (() => {
     const index = days.findIndex((day) => day.slots.length);
@@ -120,7 +117,7 @@ export default function ProfileModal({ match, matchedTags = [], onClose, onChoos
           <div>
             <h2 id="profile-title">{person.name}</h2>
             <p className="modal__hero-role">
-              {person.role} · {person.approach}
+              {person.role}
             </p>
             <div className="modal__hero-meta">
               <span className="pill-meta">{money(person.price)} • 50 минут</span>
@@ -130,32 +127,9 @@ export default function ProfileModal({ match, matchedTags = [], onClose, onChoos
         </div>
 
         <div className="modal__body">
-          {shared.length > 0 && (
-            <section className="section">
-              <h3>Почему подходит вам</h3>
-              <p>
-                Вы отметили: {shared.join(", ")}. {person.name.split(" ")[0]} работает именно с
-                этими запросами — {person.approach.toLowerCase()}.
-              </p>
-            </section>
-          )}
-
           <section className="section">
             <h3>О специалисте</h3>
-            <p>{quoted(person.quote)}</p>
             <p>{person.about}</p>
-            <div className="tag-row">
-              {person.tags.map((tag) => (
-                <span className="tag" key={tag}>
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </section>
-
-          <section className="section">
-            <h3>Образование и подход</h3>
-            <p>{person.education}</p>
             <p>Формат работы: {person.format.toLowerCase()}, сессия 50 минут.</p>
           </section>
 

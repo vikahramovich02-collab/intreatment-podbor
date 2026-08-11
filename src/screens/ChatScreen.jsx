@@ -6,83 +6,81 @@ import ProfileModal from "../components/ProfileModal.jsx";
 import HelpModal from "../components/HelpModal.jsx";
 import TopicsPanel from "../components/TopicsPanel.jsx";
 import { AssistantMessage, UserMessage } from "../components/Message.jsx";
-import { flow, stepById, refineOptions, crisisPattern } from "../data/flow.js";
-import { rankSpecialists } from "../data/specialists.js";
-import { now } from "../lib/format.js";
+import { crisisPattern } from "../data/flow.js";
+import {
+  MAIN_CATEGORIES,
+  subcategoriesOf,
+  subSubcategoriesOf,
+  situationOf,
+  specialistsOf,
+} from "../data/categories.js";
+import { specialistsByCodes } from "../data/specialists.js";
+import { now, nearestSlotLabel } from "../lib/format.js";
 
 const GREETING =
   "Здравствуйте!\n\nПомогу подобрать специалиста, с которым будет спокойно начать. Это займёт около 3 минут — можно выбирать варианты или писать своими словами.";
+const ASK_NAME = "Как к вам можно обращаться?";
+const ASK_CATEGORY = "В какой сфере вы хотели бы изменений?";
+const ASK_SUB = "Что ближе к вашей ситуации?";
+const ASK_RECOGNIZE = "Узнаёте себя в этом?";
 
-/* Свободный текст тоже участвует в подборе: ищем в нём знакомые темы. */
+const DUTY = { signature: "Дежурный психолог Дарья" };
+const BACK_TO_CATEGORIES = { label: "Вернуться к категориям", toCategories: true };
+const NEXT_SPECIALIST = { label: "Показать другого специалиста", nextPerson: true };
+
+/* Свободный текст сопоставляем с категориями алгоритма по ключевым словам */
 const KEYWORDS = [
-  [/тревог|паник|напряж|беспоко/i, "тревога"],
-  [/выгора|нет сил|устал|истощ|апати|нет смысла|нет вкуса/i, "выгорание"],
-  [/отношени|партн[её]р|муж|жена|близк/i, "отношения"],
-  [/расстав|развод|ушл[аи]|бросил/i, "расставание"],
-  [/границ|не могу отказ|говорить нет/i, "границы"],
-  [/конфликт|ссор|скандал/i, "конфликты"],
-  [/ребён|ребен|дет|мам|родител|материнств/i, "родительство"],
-  [/вин[ауы]|виноват/i, "вина"],
-  [/самооцен|самокрит|не верю в себя|сомнева/i, "самооценка"],
-  [/прокрастин|откладыв|не могу начать|не могу собрат/i, "прокрастинация"],
-  [/проявл|блог|проект|реализ|карьер/i, "самореализация"],
-  [/перемен|измен|переезд|новая жизнь|неопредел/i, "перемены"],
-  [/травм|насили|абьюз|птср/i, "травма"],
-  [/одинок|никого рядом|не с кем/i, "одиночество"],
-  [/страх|боюсь|пугает/i, "страх"],
-  [/опор|поддержк|устойчив/i, "опора"],
+  [/отношени|партн[её]р|муж|жена|расстав|развод|конфликт|близк/i, "p2"],
+  [/ребён|ребен|дет|подрост|мам|родительств|материнств/i, "p3"],
+  [/перемен|переезд|работ|уволил|измен|неопредел/i, "p1"],
+  [/реализ|проект|творч|карьер|самозван|проявл/i, "p4"],
+  [/боле|тело|психосомат|давлени|аллерг|астм/i, "p7"],
+  [/самооцен|себе не нравл|осуд|ошиб|несовершен/i, "p8"],
+  [/смысл|тревог|паник|депресс|апати|нет сил|выгора/i, "p5"],
+  [/травм|насили|войн|жестокост|болезненные воспомин/i, "p6"],
 ];
 
-const tagsFromText = (text) =>
-  KEYWORDS.filter(([pattern]) => pattern.test(text)).map(([, tag]) => tag);
-
-/* Заголовок темы для боковой панели, когда клиент описал запрос своими словами */
-const titleFromText = (text) => {
-  const short = text.trim().split(/\s+/).slice(0, 5).join(" ");
-  return short.charAt(0).toUpperCase() + short.slice(1) + (text.trim().split(/\s+/).length > 5 ? "…" : "");
+const categoryOfText = (text) => {
+  const hit = KEYWORDS.find(([pattern]) => pattern.test(text));
+  return hit ? hit[1] : null;
 };
 
-const NEW_TOPIC = { label: "Обсудить другую тему", newTopic: true };
-
-/* Ответ на свободный текст подписываем живым человеком */
-const DUTY = { signature: "Дежурный психолог Дарья" };
+const labelOfCategory = (code) =>
+  (MAIN_CATEGORIES.find(([, key]) => key === code) || [])[0] || "";
 
 export default function ChatScreen({ onBook, onLogin, onCrisis }) {
   const [messages, setMessages] = useState([
     { role: "assistant", text: GREETING, time: now(), topicId: null },
-    { role: "assistant", text: stepById("name").prompt, time: now(), topicId: null },
+    { role: "assistant", text: ASK_NAME, time: now(), topicId: null },
   ]);
-  const [phase, setPhase] = useState("flow"); // flow → matched
-  const [stepId, setStepId] = useState("name");
-  const [tags, setTags] = useState([]);
+  /* Стадии повторяют шаги бота: имя → категория → подкатегория →
+     третий уровень → узнавание ситуации → выдача специалистов */
+  const [stage, setStage] = useState("name");
+  const [category, setCategory] = useState(null); // код категории (p1…p8, emergency)
+  const [subLabel, setSubLabel] = useState(null); // подкатегория с третьим уровнем
+  const [vCode, setVCode] = useState(null);
   const [name, setName] = useState("");
   const [typing, setTyping] = useState(false);
   const [matches, setMatches] = useState([]);
   const [matchIndex, setMatchIndex] = useState(0);
-  const [modal, setModal] = useState(null); // { match, focus }
+  const [modal, setModal] = useState(null);
   const [helpOpen, setHelpOpen] = useState(false);
-  const [draft, setDraft] = useState(null); // текст, возвращённый в поле при редактировании
-  /* 152-ФЗ: согласие даётся осознанно — галочка не проставлена заранее
-     и без неё чат не начинается */
+  const [draft, setDraft] = useState(null);
   const [consent, setConsent] = useState(false);
 
-  /* Темы: у клиента редко один запрос. Каждая новая тема — своя ветка
-     со своими метками и своим подобранным специалистом. */
+  /* Темы: каждая выбранная категория — своя ветка со своим специалистом */
   const [topics, setTopics] = useState([]);
   const [topicId, setTopicId] = useState(null);
-  const [visibleTopic, setVisibleTopic] = useState(null); // тема, до которой долистали
+  const [visibleTopic, setVisibleTopic] = useState(null);
 
   const threadRef = useRef(null);
   const nodeRefs = useRef({});
   const timers = useRef([]);
-  const step = phase === "flow" ? stepById(stepId) : null;
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   useEffect(() => {
-    const node = threadRef.current;
-    if (!node) return;
-    node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
+    threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length, typing]);
 
   const clearTimers = () => {
@@ -99,34 +97,33 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
     timers.current.push(timer);
   };
 
-  /* Реплика клиента несёт снимок состояния ДО ответа — по нему работает
-     редактирование: откатываемся к снимку и проигрываем ответ заново. */
-  const hear = (text, snapshot) =>
+  const snapshotNow = () => ({ stage, category, subLabel, vCode, topicId, topics, name });
+
+  const hear = (text) =>
     setMessages((prev) => [
       ...prev,
-      { role: "user", text, time: now(), topicId, snapshot },
+      { role: "user", text, time: now(), topicId, snapshot: snapshotNow() },
     ]);
-
-  const snapshotNow = () => ({
-    stepId,
-    tags,
-    phase,
-    topicId,
-    topics,
-    name,
-  });
 
   const withName = (text) => (name ? `${name}, ${text[0].toLowerCase()}${text.slice(1)}` : text);
 
-  /* ── Подбор ── */
-  const showMatch = (allTags, index = 0, lead, forTopic = topicId, extra = {}) => {
-    const ranked = rankSpecialists(allTags);
-    setMatches(ranked);
+  const openProfile = (person, focus) => setModal({ person, focus });
+
+  /* ── Выдача специалистов по v-коду ── */
+  const showMatch = (code, forTopic = topicId, index = 0, extra = {}) => {
+    const people = specialistsByCodes(specialistsOf(code));
+    if (!people.length) {
+      say(withName("Подходящих специалистов пока нет — попробуйте другую категорию."), {
+        topicId: forTopic,
+      });
+      return;
+    }
+    setMatches(people);
     setMatchIndex(index);
-    setPhase("matched");
+    setStage("matched");
     setTopics((prev) =>
       prev.map((topic) =>
-        topic.id === forTopic ? { ...topic, personName: ranked[index].person.name } : topic
+        topic.id === forTopic ? { ...topic, personName: people[index].name } : topic
       )
     );
     setTyping(true);
@@ -136,29 +133,29 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
         ...prev,
         {
           role: "assistant",
-          text: lead || withName("Вот кто может подойти под ваш запрос."),
+          text: withName("Вот кто может подойти под ваш запрос."),
           time: now(),
           topicId: forTopic,
           ...extra,
         },
-        { role: "rec", match: ranked[index], topicId: forTopic },
+        { role: "rec", person: people[index], topicId: forTopic },
       ]);
     }, 750);
     timers.current.push(timer);
   };
 
-  const goTo = (nextId, allTags, extra = {}) => {
-    if (!nextId) {
-      showMatch(allTags, 0, undefined, topicId, extra);
+  /* Описание ситуации из алгоритма — перед выдачей специалистов */
+  const askRecognize = (code) => {
+    const situation = situationOf(code);
+    setVCode(code);
+    if (!situation) {
+      showMatch(code);
       return;
     }
-    const next = stepById(nextId);
-    setStepId(nextId);
-    setPhase("flow");
-    say(withName(next.prompt), { topicId, ...extra });
+    setStage("situation");
+    say(`${situation}\n\n${ASK_RECOGNIZE}`, { topicId });
   };
 
-  /* Новая тема разговора */
   const openTopic = (title) => {
     const id = `t${Date.now()}`;
     setTopics((prev) => [...prev, { id, title, personName: null }]);
@@ -166,142 +163,139 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
     return id;
   };
 
+  const goToCategories = () => {
+    setStage("category");
+    setCategory(null);
+    setSubLabel(null);
+    setVCode(null);
+    setTopicId(null);
+    say(withName(ASK_CATEGORY), { topicId: null });
+  };
+
   /* ── Ответы ── */
   const pickOption = (option) => {
-    const snapshot = snapshotNow();
+    hear(option.label);
 
-    if (phase === "matched") {
-      refine(option, snapshot);
+    if (option.toCategories) {
+      goToCategories();
       return;
     }
     if (option.skip) {
-      hear(option.label, snapshot);
-      goTo(step.next, tags);
+      setStage("category");
+      say(ASK_CATEGORY);
+      return;
+    }
+    if (option.duty) {
+      say(
+        "Передала сообщение дежурному психологу — он ответит здесь в ближайшее время. Можно рассказать, что происходит.",
+        DUTY
+      );
       return;
     }
 
-    hear(option.label, snapshot);
-
-    const allTags = [...tags, ...(option.tags || [])];
-    setTags(allTags);
-
-    // Ответ на вопрос о сфере открывает новую тему
-    if (step.id === "topic") {
+    if (stage === "category") {
+      if (option.code === "emergency") setHelpOpen("list");
       const id = openTopic(option.label);
-      const next = stepById(option.next || step.next);
-      setStepId(next.id);
-      setPhase("flow");
-      say(withName(next.prompt), { topicId: id });
+      setCategory(option.code);
+      setStage("sub");
+      say(withName(ASK_SUB), { topicId: id });
       return;
     }
 
-    goTo(option.next || step.next, allTags);
-  };
-
-  const pickMany = (labels) => {
-    const snapshot = snapshotNow();
-    const said = labels
-      .map((label, index) => (index === 0 ? label : label[0].toLowerCase() + label.slice(1)))
-      .join(", ");
-    hear(labels.length ? said : "Ничего из этого", snapshot);
-    const picked = step.options.filter((option) => labels.includes(option.label));
-    const allTags = [...tags, ...picked.flatMap((option) => option.tags || [])];
-    setTags(allTags);
-    // Ничего не отметили — просим рассказать своими словами
-    goTo(labels.length ? step.next : "own_words", allTags);
-  };
-
-  const sendText = (value) => {
-    const snapshot = snapshotNow();
-
-    if (crisisPattern.test(value)) {
-      hear(value, snapshot);
-      onCrisis();
-      return;
-    }
-    hear(value, snapshot);
-
-    if (phase === "matched") {
-      const allTags = [...tags, ...tagsFromText(value)];
-      setTags(allTags);
-      showMatch(allTags, 0, withName("Поняла. Тогда посмотрите на этот вариант."), topicId, DUTY);
+    if (stage === "sub") {
+      if (subSubcategoriesOf(option.label).length) {
+        setSubLabel(option.label);
+        setStage("subsub");
+        say(withName(ASK_SUB), { topicId });
+        return;
+      }
+      askRecognize(option.vCode);
       return;
     }
 
-    if (step.id === "name") {
-      const visitor = value.split(" ")[0].slice(0, 24);
-      setName(visitor);
-      const next = stepById(step.next);
-      setStepId(step.next);
-      say(`Приятно познакомиться, ${visitor}. ${next.prompt}`, { topicId });
+    if (stage === "subsub") {
+      askRecognize(option.vCode);
       return;
     }
 
-    const allTags = [...tags, ...tagsFromText(value)];
-    setTags(allTags);
-
-    if (step.id === "topic") {
-      const id = openTopic(titleFromText(value));
-      const next = stepById(step.freeTextNext || step.next);
-      setStepId(next.id);
-      setPhase("flow");
-      say(withName(next.prompt), { topicId: id, ...DUTY });
+    if (stage === "situation") {
+      if (option.recognize) {
+        showMatch(vCode);
+      } else {
+        setStage("sub");
+        say(withName("Тогда посмотрим ещё раз: что ближе к вашей ситуации?"), { topicId });
+      }
       return;
     }
 
-    goTo(step.freeTextNext || step.next, allTags, DUTY);
-  };
-
-  const refine = (option, snapshot) => {
-    hear(option.label, snapshot);
-
-    if (option.newTopic) {
-      setTags([]);
-      setStepId("topic");
-      setPhase("flow");
-      say(withName(stepById("topic").prompt), { topicId: null });
-      return;
-    }
-    if (option.nextPerson) {
+    if (stage === "matched" && option.nextPerson) {
       const next = (matchIndex + 1) % matches.length;
       setMatchIndex(next);
       setTopics((prev) =>
         prev.map((topic) =>
-          topic.id === topicId ? { ...topic, personName: matches[next].person.name } : topic
+          topic.id === topicId ? { ...topic, personName: matches[next].name } : topic
         )
       );
       say(withName("Показываю другого специалиста."), { topicId });
       const timer = setTimeout(
-        () =>
-          setMessages((prev) => [...prev, { role: "rec", match: matches[next], topicId }]),
+        () => setMessages((prev) => [...prev, { role: "rec", person: matches[next], topicId }]),
         700
       );
       timers.current.push(timer);
-      return;
     }
-    showMatch(tags, 0, withName("Поняла. Уточнила подбор."));
   };
 
-  /* ── Редактирование ответа ──
-     Возвращаемся в точку, где этот ответ был дан: всё, что было сказано после,
-     отматывается, и подбор пойдёт заново с нового ответа. */
+  const sendText = (value) => {
+    if (crisisPattern.test(value)) {
+      hear(value);
+      onCrisis();
+      return;
+    }
+    hear(value);
+
+    if (stage === "name") {
+      const visitor = value.split(" ")[0].slice(0, 24);
+      setName(visitor);
+      setStage("category");
+      say(`Приятно познакомиться, ${visitor}. ${ASK_CATEGORY}`);
+      return;
+    }
+
+    // В любой момент свободный текст пробуем сопоставить с категорией алгоритма
+    const guess = categoryOfText(value);
+    if (guess) {
+      const id = openTopic(labelOfCategory(guess));
+      setCategory(guess);
+      setStage("sub");
+      say(withName(`Похоже, это про «${labelOfCategory(guess)}». ${ASK_SUB}`), {
+        topicId: id,
+        ...DUTY,
+      });
+      return;
+    }
+    say(withName("Спасибо, что рассказали. Выберите, что ближе к вашей ситуации."), {
+      topicId,
+      ...DUTY,
+    });
+  };
+
+  /* ── Редактирование ответа ── */
   const editMessage = (index) => {
     const message = messages[index];
     if (!message?.snapshot) return;
     clearTimers();
     setTyping(false);
     setMessages(messages.slice(0, index));
-    setStepId(message.snapshot.stepId);
-    setTags(message.snapshot.tags);
-    setPhase(message.snapshot.phase);
+    setStage(message.snapshot.stage);
+    setCategory(message.snapshot.category);
+    setSubLabel(message.snapshot.subLabel);
+    setVCode(message.snapshot.vCode);
     setTopicId(message.snapshot.topicId);
     setTopics(message.snapshot.topics);
     setName(message.snapshot.name);
     setDraft({ text: message.text, at: Date.now() });
   };
 
-  /* Подсветка в «содержании» идёт за прокруткой: активна та тема,
-     чьи сообщения сейчас в верхней части ленты. */
   const onThreadScroll = () => {
     const node = threadRef.current;
     if (!node) return;
@@ -317,48 +311,66 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
 
   const scrollToTopic = (topic) => {
     const index = messages.findIndex((message) => message.topicId === topic.id);
-    const node = nodeRefs.current[index];
-    node?.scrollIntoView({ block: "start", behavior: "smooth" });
+    nodeRefs.current[index]?.scrollIntoView({ block: "start", behavior: "smooth" });
   };
 
-  /* ── Состояние композера ── */
-  const composer =
-    phase === "matched"
-      ? {
-          options: [...refineOptions, NEW_TOPIC],
-          mode: "single",
-          primaryAction: matches[matchIndex]
-            ? {
-                label: "Записаться",
-                onClick: () => openProfile(matches[matchIndex].person, "schedule"),
-              }
-            : null,
-        }
-      : {
-          options:
-            step?.kind === "multi"
-              ? [...step.options, { label: "Ничего из этого", none: true }]
-              : step?.options || [],
-          mode: step?.kind === "multi" ? "multi" : "single",
-          submitLabel: step?.submitLabel,
-          placeholder: step?.placeholder,
-        };
-
-  const openProfile = (person, focus) => {
-    const match = matches.find((item) => item.person.id === person.id) || matches[matchIndex];
-    setModal({ match, focus });
-  };
+  /* ── Что показываем в композере ── */
+  const composer = (() => {
+    if (stage === "name") {
+      return { options: [{ label: "Пропустить", skip: true }], placeholder: "Ваше имя.." };
+    }
+    if (stage === "category") {
+      return {
+        options: MAIN_CATEGORIES.map(([label, code]) => ({
+          label,
+          code,
+          duty: code === "duty_psychologist",
+        })),
+      };
+    }
+    if (stage === "sub") {
+      return {
+        options: subcategoriesOf(category).map(([label, code]) => ({ label, vCode: code })),
+        back: BACK_TO_CATEGORIES,
+      };
+    }
+    if (stage === "subsub") {
+      return {
+        options: subSubcategoriesOf(subLabel).map(([label, code]) => ({ label, vCode: code })),
+        back: BACK_TO_CATEGORIES,
+      };
+    }
+    if (stage === "situation") {
+      return {
+        options: [
+          { label: "Да, узнаю себя", recognize: true },
+          { label: "Не совсем, вернуться к списку" },
+        ],
+        back: BACK_TO_CATEGORIES,
+      };
+    }
+    const person = matches[matchIndex];
+    return {
+      options: [NEXT_SPECIALIST],
+      back: BACK_TO_CATEGORIES,
+      primaryAction: person
+        ? {
+            label: (() => {
+              const nearest = nearestSlotLabel(person);
+              return nearest ? `Записаться на ${nearest}` : "Записаться";
+            })(),
+            onClick: () => openProfile(person, "schedule"),
+          }
+        : null,
+    };
+  })();
 
   return (
     <div className="app app--fixed">
       <Header onLogin={onLogin} onHelp={(focus) => setHelpOpen(focus || "list")} />
 
       <div className="chat">
-        <TopicsPanel
-          topics={topics}
-          activeId={visibleTopic || topicId}
-          onPick={scrollToTopic}
-        />
+        <TopicsPanel topics={topics} activeId={visibleTopic || topicId} onPick={scrollToTopic} />
 
         <div className="chat__thread" ref={threadRef} onScroll={onThreadScroll}>
           <div className="column chat__thread-inner">
@@ -380,7 +392,7 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
               if (message.role === "rec") {
                 return (
                   <div key={index} ref={setNode}>
-                    <RecommendationCard match={message.match} onOpen={openProfile} />
+                    <RecommendationCard person={message.person} onOpen={openProfile} />
                   </div>
                 );
               }
@@ -403,22 +415,16 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
           draft={draft}
           disabled={typing}
           onPick={pickOption}
-          onPickMany={pickMany}
           onText={sendText}
-          consent={
-            consent ? null : { checked: consent, onChange: setConsent }
-          }
+          consent={consent ? null : { checked: consent, onChange: setConsent }}
         />
       </div>
 
-      {helpOpen && (
-        <HelpModal focus={helpOpen} onClose={() => setHelpOpen(false)} />
-      )}
+      {helpOpen && <HelpModal focus={helpOpen} onClose={() => setHelpOpen(false)} />}
 
       {modal && (
         <ProfileModal
-          match={modal.match}
-          matchedTags={tags}
+          person={modal.person}
           focus={modal.focus}
           onClose={() => setModal(null)}
           onChoose={(booking) => {
@@ -426,9 +432,9 @@ export default function ChatScreen({ onBook, onLogin, onCrisis }) {
             onBook({ ...booking, name });
           }}
           onNext={() => {
-            const next = (matches.findIndex((item) => item === modal.match) + 1) % matches.length;
+            const next = (matches.findIndex((item) => item === modal.person) + 1) % matches.length;
             setMatchIndex(next);
-            setModal({ match: matches[next], focus: "about" });
+            setModal({ person: matches[next], focus: "about" });
           }}
         />
       )}

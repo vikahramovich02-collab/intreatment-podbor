@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { money, nearestSlotLabel, quoted } from "../lib/format.js";
+import { Mark } from "./icons.jsx";
+import { money } from "../lib/format.js";
 
 /* Видео-визитка психолога: кружок как в телеграме — фото до запуска,
    по клику проигрывается запись со звуком. */
@@ -60,49 +61,33 @@ function VideoCircle({ person }) {
 
 /* Подобранный психолог приходит в ленту как собственная реплика:
    аватар с именем, видео-кружок, короткий рассказ о себе и действия. */
-export default function RecommendationCard({ match, onOpen, time }) {
-  const { person } = match;
-  const nearest = nearestSlotLabel(person);
+export default function RecommendationCard({ person, onOpen, time }) {
 
   return (
     <article className="msg rec">
       <div className="msg__head">
-        <span className="avatar rec__avatar">
-          <img src={person.photo} alt="" />
+        <span className="msg__head-avatar">
+          <Mark />
         </span>
-        <span>
-          <b className="msg__head-name">{person.name}</b>
-          <span className="msg__head-role">{person.role}</span>
-        </span>
+        <b className="msg__head-name">InTreatment</b>
       </div>
 
       <VideoCircle person={person} />
       {person.video && <p className="rec__videohint">Видео-визитка · 30 секунд</p>}
 
-      <p className="msg__body rec__about">{quoted(person.quote)}</p>
-      <p className="msg__body rec__about rec__about--second">{person.about}</p>
-
-      <div className="rec__meta">
-        <span className="pill-meta">{money(person.price)} • 50 минут</span>
-        {nearest ? (
-          <button
-            type="button"
-            className="pill-meta pill-meta--action"
-            onClick={() => onOpen(person, "schedule")}
-          >
-            Ближайшая запись: {nearest}
-          </button>
-        ) : (
-          <span className="pill-meta">Ближайших слотов нет</span>
-        )}
+      <div className="rec__head">
+        <b className="rec__name">{person.name}</b>
+        <span className="rec__role">{person.role}</span>
       </div>
 
-      {/* Запись — чёрной кнопкой в зоне действий под чатом, здесь только профиль */}
-      <div className="rec__actions">
-        <button className="link" type="button" onClick={() => onOpen(person, "about")}>
-          Подробнее о психологе
-        </button>
-      </div>
+      <p className="msg__body rec__about">{person.about}</p>
+
+      {/* Запись — кнопкой в зоне действий под чатом, здесь профиль и стоимость */}
+      <button className="link" type="button" onClick={() => onOpen(person, "about")}>
+        Подробнее о психологе
+      </button>
+
+      <span className="rec__price">{money(person.price)} • 50 минут</span>
 
       {time && <time className="msg__time">{time}</time>}
     </article>

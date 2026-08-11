@@ -741,6 +741,30 @@ button {
   text-decoration-color: var(--ink);
 }
 
+/* Возврат к категориям — тихой строкой над вариантами */
+.composer__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 4px 0;
+  font-size: 13px;
+  color: var(--ghost);
+  transition: color 0.16s var(--ease);
+}
+.composer__back:hover {
+  color: var(--ink);
+}
+.composer__back svg {
+  width: 14px;
+  height: 14px;
+}
+
+.composer__primary {
+  height: 52px;
+  font-size: 15px;
+}
+
 .composer__skip {
   align-self: flex-start;
   font-size: 13px;
@@ -886,9 +910,28 @@ button {
 .rec .msg__head {
   margin-bottom: 0;
 }
-.rec__avatar {
-  width: 48px;
-  height: 48px;
+.rec__head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rec__name {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--ink-80);
+}
+.rec__role {
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+/* Стоимость — обведённой плашкой, без заливки */
+.rec__price {
+  padding: 12px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--ink);
 }
 
 .rec__circle {
@@ -952,20 +995,6 @@ button {
 .rec__about--second {
   margin-top: -6px;
   color: var(--ink-soft);
-}
-.rec__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.rec__actions {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-top: 2px;
-}
-.rec__actions .btn--sm {
-  padding-inline: 28px;
 }
 .rec .msg__time {
   margin-top: 2px;
@@ -1963,10 +1992,6 @@ button {
   .rec__circle {
     width: 168px;
     height: 168px;
-  }
-  .rec__actions {
-    flex-wrap: wrap;
-    gap: 14px 20px;
   }
   .rec__about {
     max-width: none;
