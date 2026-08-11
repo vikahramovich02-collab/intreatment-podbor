@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Mark, CheckIcon, ArrowLeft } from "./icons.jsx";
+import SubscribeModal from "./SubscribeModal.jsx";
 
 const NONE_LABEL = "Ничего из этого";
 
@@ -22,8 +23,6 @@ export default function Composer({
      чтобы было видно, куда нажать */
   const [flash, setFlash] = useState(false);
   const [mailOpen, setMailOpen] = useState(false);
-  const [mail, setMail] = useState("");
-  const [mailSent, setMailSent] = useState(false);
   const flashConsent = () => {
     setFlash(false);
     requestAnimationFrame(() => setFlash(true));
@@ -169,38 +168,13 @@ export default function Composer({
 
         {!consent && (
           <div className="subscribe">
-            {mailSent ? (
-              <p className="subscribe__done" role="status">
-                Спасибо — пришлём подборку и материалы на {mail}.
-              </p>
-            ) : mailOpen ? (
-              <div className="inline-field">
-                <label className="field" style={{ flex: 1 }}>
-                  <span className="sr-only">Почта для подборки</span>
-                  <input
-                    type="email"
-                    value={mail}
-                    onChange={(event) => setMail(event.target.value)}
-                    placeholder="name@example.com"
-                    autoFocus
-                  />
-                </label>
-                <button
-                  className="btn btn--outline"
-                  type="button"
-                  disabled={!mail.includes("@")}
-                  onClick={() => setMailSent(true)}
-                >
-                  Подписаться
-                </button>
-              </div>
-            ) : (
-              <button className="subscribe__open" type="button" onClick={() => setMailOpen(true)}>
-                Прислать подборку и полезные материалы на почту
-              </button>
-            )}
+            <button className="subscribe__open" type="button" onClick={() => setMailOpen(true)}>
+              Прислать подборку и полезные материалы на почту
+            </button>
           </div>
         )}
+
+        {mailOpen && <SubscribeModal onClose={() => setMailOpen(false)} />}
 
         {consent && (
           <label className={`consent ${flash ? "is-flash" : ""}`.trim()}>

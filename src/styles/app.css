@@ -699,10 +699,6 @@ button {
   color: var(--ink-soft);
   text-decoration-color: var(--ink-soft);
 }
-.subscribe__done {
-  font-size: 13px;
-  color: var(--ghost);
-}
 
 .consent {
   display: flex;
@@ -1427,6 +1423,10 @@ button {
 }
 
 /* Попап быстрой помощи */
+.modal--narrow {
+  max-width: 520px;
+}
+
 .modal--help {
   max-width: 720px;
 }
