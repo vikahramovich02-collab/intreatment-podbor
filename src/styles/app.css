@@ -780,7 +780,7 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 56px;
+  height: 60px;
   padding: 6px 6px 6px 21px;
   border: 1px solid var(--hairline);
   border-radius: var(--r-lg);
