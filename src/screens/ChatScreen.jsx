@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Header from "../components/Header.jsx";
 import Composer from "../components/Composer.jsx";
 import RecommendationCard from "../components/RecommendationCard.jsx";
+import ProductCard from "../components/ProductCard.jsx";
 import ProfileModal from "../components/ProfileModal.jsx";
 import HelpModal from "../components/HelpModal.jsx";
 import TopicsPanel from "../components/TopicsPanel.jsx";
@@ -107,6 +108,11 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
   const withName = (text) => (name ? `${name}, ${text[0].toLowerCase()}${text.slice(1)}` : text);
 
   const openProfile = (person, focus) => setModal({ person, focus });
+
+  /* Материал из каталога самопомощи приходит в чат карточкой */
+  const showProduct = (product) => {
+    setMessages((prev) => [...prev, { role: "product", product, topicId, time: now() }]);
+  };
 
   /* ── Выдача специалистов по v-коду ── */
   const showMatch = (code, forTopic = topicId, index = 0, extra = {}) => {
@@ -375,6 +381,13 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
                   />
                 );
               }
+              if (message.role === "product") {
+                return (
+                  <div key={index} ref={setNode}>
+                    <ProductCard product={message.product} onBuy={onBuyProduct} />
+                  </div>
+                );
+              }
               if (message.role === "rec") {
                 return (
                   <div key={index} ref={setNode}>
@@ -407,7 +420,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
       </div>
 
       {helpOpen && (
-        <HelpModal focus={helpOpen} onBuy={onBuyProduct} onClose={() => setHelpOpen(false)} />
+        <HelpModal focus={helpOpen} onPick={showProduct} onClose={() => setHelpOpen(false)} />
       )}
 
       {modal && (

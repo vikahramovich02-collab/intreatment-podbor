@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Mark, CloseIcon, ArrowLeft } from "./icons.jsx";
+import { useEffect, useRef } from "react";
+import { CloseIcon } from "./icons.jsx";
 import { products } from "../data/products.js";
 import { money } from "../lib/format.js";
 
@@ -7,9 +7,7 @@ import { money } from "../lib/format.js";
    Сначала — бесплатная экстренная помощь, и только ниже платные материалы:
    человеку в остром кризисе мы ничего не продаём.
    Шаги: список → карточка продукта → оплата → забрать. */
-export default function HelpModal({ onClose, onBuy, focus = "list" }) {
-  const [stage, setStage] = useState("list"); // list → product
-  const [picked, setPicked] = useState(null);
+export default function HelpModal({ onClose, onPick, focus = "list" }) {
   const panelRef = useRef(null);
   const closeRef = useRef(null);
   const productsRef = useRef(null);
@@ -54,7 +52,7 @@ export default function HelpModal({ onClose, onBuy, focus = "list" }) {
     }
   };
 
-  const title = stage === "list" ? "Помощь прямо сейчас" : picked?.title || "";
+  const title = "Помощь прямо сейчас";
 
   return (
     <div
@@ -77,27 +75,15 @@ export default function HelpModal({ onClose, onBuy, focus = "list" }) {
 
         <div className="modal__hero modal__hero--plain">
           <div>
-            {stage !== "list" && (
-              <button
-                className="funnel__back"
-                type="button"
-                onClick={() => setStage("list")}
-              >
-                <ArrowLeft /> К списку
-              </button>
-            )}
             <h2 id="help-title">{title}</h2>
-            {stage === "list" && (
-              <p className="modal__hero-role">
-                Пока идёт подбор или ждёте первую встречу — вот что может поддержать.
-              </p>
-            )}
+            <p className="modal__hero-role">
+              Пока идёт подбор или ждёте первую встречу — вот что может поддержать.
+            </p>
           </div>
         </div>
 
         <div className="modal__body">
-          {stage === "list" && (
-            <>
+          <>
               <section className="section">
                 <h3>Если сейчас небезопасно</h3>
                 <p>
@@ -119,8 +105,8 @@ export default function HelpModal({ onClose, onBuy, focus = "list" }) {
                       type="button"
                       className="help-card"
                       onClick={() => {
-                        setPicked(product);
-                        setStage("product");
+                        onPick(product);
+                        onClose();
                       }}
                     >
                       <span className="help-card__kind">{product.kind}</span>
@@ -131,54 +117,15 @@ export default function HelpModal({ onClose, onBuy, focus = "list" }) {
                   ))}
                 </div>
               </section>
-            </>
-          )}
-
-          {stage === "product" && picked && (
-            <>
-              <section className="section">
-                <h3>{picked.kind}</h3>
-                <p>{picked.about}</p>
-              </section>
-              <section className="section">
-                <h3>Кому подойдёт</h3>
-                <p>{picked.forWhom}</p>
-              </section>
-              <section className="section">
-                <h3>Что получите</h3>
-                <p>{picked.deliver}</p>
-                <p className="card__hint">{picked.meta}</p>
-              </section>
-            </>
-          )}
+          </>
 
         </div>
 
         <div className="modal__footer">
-          {stage === "list" && (
-            <button className="btn btn--quiet" type="button" onClick={onClose}>
-              Закрыть
-            </button>
-          )}
+          <button className="btn btn--quiet" type="button" onClick={onClose}>
+            Закрыть
+          </button>
 
-          {stage === "product" && picked && (
-            <>
-              <button className="link" type="button" onClick={() => setStage("list")}>
-                Посмотреть другое
-              </button>
-              <button
-                className="btn btn--primary"
-                type="button"
-                onClick={() => {
-                  onBuy(picked);
-                  onClose();
-                }}
-              >
-                <Mark />
-                Забрать за {money(picked.price)}
-              </button>
-            </>
-          )}
         </div>
       </div>
     </div>
