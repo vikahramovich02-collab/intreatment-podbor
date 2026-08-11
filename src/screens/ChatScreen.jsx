@@ -51,8 +51,7 @@ const labelOfCategory = (code) =>
 
 export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) {
   const [messages, setMessages] = useState([
-    { role: "assistant", text: GREETING, time: now(), topicId: null },
-    { role: "assistant", text: ASK_NAME, time: now(), topicId: null },
+    { role: "assistant", text: `${GREETING}\n\n${ASK_NAME}`, time: now(), topicId: null },
   ]);
   /* Стадии повторяют шаги бота: имя → категория → подкатегория →
      третий уровень → узнавание ситуации → выдача специалистов */
