@@ -683,11 +683,61 @@ button {
 }
 
 /* Согласие на обработку данных: пустой чекбокс, отмечает сам клиент */
+/* Подписка на рассылку — тихой строкой под чатом (потенциальный клиент по PRD) */
+.subscribe {
+  padding-top: 2px;
+}
+.subscribe__open {
+  font-size: 13px;
+  color: var(--ghost);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line-strong);
+  transition: color 0.16s var(--ease);
+}
+.subscribe__open:hover {
+  color: var(--ink-soft);
+  text-decoration-color: var(--ink-soft);
+}
+.subscribe__done {
+  font-size: 13px;
+  color: var(--ghost);
+}
+
 .consent {
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  padding: 8px 10px;
+  margin-left: -10px;
+  border-radius: var(--r-sm);
   cursor: pointer;
+}
+/* Подсветка, когда клиент пытается писать до согласия */
+.consent.is-flash {
+  animation: consent-flash 1.2s var(--ease);
+}
+.consent.is-flash .consent__box {
+  border-color: var(--ink);
+}
+.consent.is-flash .consent__text {
+  color: var(--ink);
+}
+@keyframes consent-flash {
+  0%,
+  100% {
+    background: transparent;
+  }
+  15%,
+  55% {
+    background: var(--btn-quiet);
+  }
+}
+/* Заблокированные элементы читаются как неактивные, но остаются кликабельными */
+.option.is-locked,
+.composer__primary.is-locked {
+  opacity: 0.45;
+  cursor: default;
 }
 .consent input {
   position: absolute;

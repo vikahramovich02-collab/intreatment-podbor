@@ -18,6 +18,17 @@ export default function Composer({
   onText,
 }) {
   const [text, setText] = useState("");
+  /* Пока согласие не отмечено, ввод заблокирован — по клику подсвечиваем строку,
+     чтобы было видно, куда нажать */
+  const [flash, setFlash] = useState(false);
+  const [mailOpen, setMailOpen] = useState(false);
+  const [mail, setMail] = useState("");
+  const [mailSent, setMailSent] = useState(false);
+  const flashConsent = () => {
+    setFlash(false);
+    requestAnimationFrame(() => setFlash(true));
+    setTimeout(() => setFlash(false), 1200);
+  };
   const [checked, setChecked] = useState([]);
 
   /* Ответ вернули на редактирование — подставляем его текст в поле */
@@ -63,7 +74,11 @@ export default function Composer({
     <div className="composer">
       <div className="column composer__inner">
         {back && (
-          <button className="composer__back" type="button" disabled={blocked} onClick={() => onPick(back)}>
+          <button
+            className="composer__back"
+            type="button"
+            onClick={() => (blocked ? flashConsent() : onPick(back))}
+          >
             <ArrowLeft />
             {back.label}
           </button>
@@ -71,10 +86,12 @@ export default function Composer({
 
         {primaryAction && (
           <button
-            className="btn btn--quiet btn--wide composer__primary"
+            className={`btn btn--quiet btn--wide composer__primary ${
+              blocked ? "is-locked" : ""
+            }`.trim()}
             type="button"
-            disabled={blocked}
-            onClick={primaryAction.onClick}
+            aria-disabled={blocked}
+            onClick={() => (blocked ? flashConsent() : primaryAction.onClick())}
           >
             {primaryAction.label}
           </button>
@@ -91,10 +108,15 @@ export default function Composer({
                 <button
                   key={option.label}
                   type="button"
-                  className={`option ${isChecked ? "is-checked" : ""}`.trim()}
-                  disabled={blocked}
+                  className={`option ${isChecked ? "is-checked" : ""} ${
+                    blocked ? "is-locked" : ""
+                  }`.trim()}
+                  aria-disabled={blocked}
                   aria-pressed={mode === "multi" ? isChecked : undefined}
-                  onClick={() => (mode === "multi" ? toggle(option) : onPick(option))}
+                  onClick={() => {
+                    if (blocked) return flashConsent();
+                    return mode === "multi" ? toggle(option) : onPick(option);
+                  }}
                 >
                   {mode === "multi" && (
                     <span className="option__box" aria-hidden="true">
@@ -128,18 +150,60 @@ export default function Composer({
             id="composer-text"
             value={text}
             placeholder={placeholder}
-            disabled={blocked}
+            readOnly={blocked}
             autoComplete="off"
+            onFocus={() => blocked && flashConsent()}
+            onClick={() => blocked && flashConsent()}
             onChange={(event) => setText(event.target.value)}
           />
-          <button className="btn btn--quiet" type="submit" disabled={blocked || !canSend}>
+          <button
+            className="btn btn--quiet"
+            type="submit"
+            disabled={!blocked && !canSend}
+            aria-disabled={blocked}
+          >
             <Mark />
             {mode === "multi" && checked.length ? submitLabel : "Отправить"}
           </button>
         </form>
 
+        {!consent && (
+          <div className="subscribe">
+            {mailSent ? (
+              <p className="subscribe__done" role="status">
+                Спасибо — пришлём подборку и материалы на {mail}.
+              </p>
+            ) : mailOpen ? (
+              <div className="inline-field">
+                <label className="field" style={{ flex: 1 }}>
+                  <span className="sr-only">Почта для подборки</span>
+                  <input
+                    type="email"
+                    value={mail}
+                    onChange={(event) => setMail(event.target.value)}
+                    placeholder="name@example.com"
+                    autoFocus
+                  />
+                </label>
+                <button
+                  className="btn btn--outline"
+                  type="button"
+                  disabled={!mail.includes("@")}
+                  onClick={() => setMailSent(true)}
+                >
+                  Подписаться
+                </button>
+              </div>
+            ) : (
+              <button className="subscribe__open" type="button" onClick={() => setMailOpen(true)}>
+                Прислать подборку и полезные материалы на почту
+              </button>
+            )}
+          </div>
+        )}
+
         {consent && (
-          <label className="consent">
+          <label className={`consent ${flash ? "is-flash" : ""}`.trim()}>
             <input
               type="checkbox"
               checked={consent.checked}
