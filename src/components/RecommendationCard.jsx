@@ -93,9 +93,17 @@ export default function RecommendationCard({ person, onOpen, time }) {
 
           <div className="rec__meta">
             <span className="rec__price">{money(person.price)} • 50 минут</span>
-            <span className="rec__price">
-              {nearest ? `Ближайшая запись: ${nearest}` : "Ближайших дат нет"}
-            </span>
+            {nearest ? (
+              <button
+                type="button"
+                className="rec__price rec__price--action"
+                onClick={() => onOpen(person, "schedule")}
+              >
+                Ближайшая запись: {nearest}
+              </button>
+            ) : (
+              <span className="rec__price">Ближайших дат нет</span>
+            )}
           </div>
         </div>
       </div>

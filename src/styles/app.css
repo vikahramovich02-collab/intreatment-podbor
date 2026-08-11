@@ -978,6 +978,16 @@ button {
   flex-wrap: nowrap;
   gap: 10px;
 }
+/* Ближайшая запись кликабельна — открывает расписание */
+.rec__price--action {
+  cursor: pointer;
+  transition: background 0.16s var(--ease);
+}
+.rec__price--action:hover {
+  background: var(--btn-quiet);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .rec__price {
   padding: 10px 12px;
   border-radius: var(--r-sm);
