@@ -78,19 +78,28 @@ const MONTHS = [
 const DOW_SHORT = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
 const DOW_FULL = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
 
-/* Две недели, начиная с сегодня: то, что показываем в календаре модалки. */
-export function buildCalendar(person, weeks = 2) {
+export const WEEKDAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
+
+/* Календарь стандартной недельной сеткой: колонки пн—вс,
+   отсчёт от понедельника текущей недели. Прошедшие дни показываем неактивными. */
+export function buildCalendar(person, weeks = 4) {
   const days = [];
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const start = new Date(today);
+  const shift = (today.getDay() + 6) % 7; // сколько дней прошло с понедельника
+  start.setDate(today.getDate() - shift);
 
   for (let i = 0; i < weeks * 7; i += 1) {
     const date = new Date(start);
     date.setDate(start.getDate() + i);
+    const past = date < today;
+    const isToday = date.getTime() === today.getTime();
     const dow = date.getDay();
     const onVacation = person.vacationUntil && date <= new Date(person.vacationUntil);
-    let slots = onVacation ? [] : person.slots[dow] || [];
-    if (i === 0) {
+    let slots = past || onVacation ? [] : person.slots[dow] || [];
+    if (isToday) {
       // Сегодня показываем только то, на что реально успеть записаться (минимум за 2 часа).
       const edge = new Date();
       edge.setHours(edge.getHours() + 2);
@@ -102,13 +111,14 @@ export function buildCalendar(person, weeks = 2) {
     }
     days.push({
       onVacation: Boolean(onVacation),
+      past,
       key: date.toISOString().slice(0, 10),
       date,
       dow: DOW_SHORT[dow],
       day: date.getDate(),
       label: `${DOW_FULL[dow]}, ${date.getDate()} ${MONTHS[date.getMonth()]}`,
       short: `${date.getDate()} ${MONTHS[date.getMonth()].slice(0, 3)}`,
-      isToday: i === 0,
+      isToday,
       slots,
     });
   }
@@ -136,7 +146,7 @@ export function vacationLabel(person) {
 }
 
 export function nearestSlotLabel(person) {
-  const days = buildCalendar(person, 2);
+  const days = buildCalendar(person, 4).filter((item) => !item.past);
   const day = days.find((item) => item.slots.length);
   if (!day) return null;
   const index = days.indexOf(day);

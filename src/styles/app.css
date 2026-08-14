@@ -1414,6 +1414,15 @@ button {
   height: 14px;
 }
 
+.cal__week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 6px;
+  font-size: 11px;
+  text-align: center;
+  color: var(--ghost);
+}
 .cal__grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -1461,6 +1470,12 @@ button {
 .cal__day[disabled] {
   opacity: 0.55;
   pointer-events: none;
+}
+.cal__day.is-past {
+  opacity: 0.3;
+}
+.cal__day.is-today:not(.is-selected) {
+  border-color: var(--ink-soft);
 }
 
 /* Отпуск специалиста и лист ожидания слотов */

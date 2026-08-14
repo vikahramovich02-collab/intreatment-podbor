@@ -4,6 +4,7 @@ import {
   money,
   buildCalendar,
   weekRange,
+  WEEKDAYS,
   vacationLabel,
   zoneShort,
   BASE_UTC,
@@ -166,6 +167,12 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
               <p className="cal__vacation">Психолог в отпуске до {vacation}</p>
             )}
 
+            <div className="cal__week" aria-hidden="true">
+              {WEEKDAYS.map((day) => (
+                <span key={day}>{day}</span>
+              ))}
+            </div>
+
             <div className="cal__grid">
               {visibleDays.map((day, index) => {
                 const globalIndex = index;
@@ -176,13 +183,12 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
                     type="button"
                     className={`cal__day ${dayIndex === globalIndex ? "is-selected" : ""} ${
                       free ? "" : "is-empty"
-                    }`.trim()}
-                    disabled={!free}
+                    } ${day.past ? "is-past" : ""} ${day.isToday ? "is-today" : ""}`.trim()}
+                    disabled={!free || day.past}
                     aria-pressed={dayIndex === globalIndex}
                     aria-label={`${day.label}${free ? `, свободно ${day.slots.length}` : ", нет времени"}`}
                     onClick={() => setDayIndex(globalIndex)}
                   >
-                    <small>{day.isToday ? "сег" : day.dow}</small>
                     <span>{day.day}</span>
                     <em>{free ? `${day.slots.length} окн.` : day.onVacation ? "отпуск" : "—"}</em>
                   </button>
