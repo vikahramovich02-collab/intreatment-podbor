@@ -46,7 +46,8 @@ export default function RegisterScreen({ order, holdStartedAt, onBack, onDone })
                     />
                   </label>
                   <p className="card__hint" style={{ marginTop: 0 }}>
-                    Подойдёт почта российского сервиса — Яндекс, Mail.ru или VK.
+                    Подойдёт почта российского сервиса — например @yandex.ru, @mail.ru,
+                    @bk.ru или @vk.com.
                   </p>
                   <button
                     className="btn btn--primary btn--lg btn--wide"

@@ -15,6 +15,7 @@ export default function Composer({
   primaryAction = null, // главное действие над списком вариантов
   back = null, // возврат к списку категорий
   stepBack = false, // доступен ли шаг назад
+  navExtra = null, // дополнительный переход в строке навигации
   onPick,
   onPickMany,
   onText,
@@ -73,8 +74,18 @@ export default function Composer({
   return (
     <div className="composer">
       <div className="column composer__inner">
-        {(back || stepBack) && (
+        {(back || stepBack || navExtra) && (
           <div className="composer__nav">
+            {navExtra && (
+              <button
+                className="composer__back"
+                type="button"
+                onClick={() => (blocked ? flashConsent() : onPick(navExtra))}
+              >
+                <ArrowLeft />
+                {navExtra.label}
+              </button>
+            )}
             {stepBack && (
               <button
                 className="composer__back"

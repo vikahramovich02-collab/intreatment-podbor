@@ -76,6 +76,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
   const [topicId, setTopicId] = useState(null);
   const [visibleTopic, setVisibleTopic] = useState(null);
   const [visibleCard, setVisibleCard] = useState(null); // карточка, на которой стоит скролл
+  const [dismissedProduct, setDismissedProduct] = useState(null); // материал, от которого вернулись к подбору
   const history = useRef([]); // снимки состояния для шага назад
 
   const threadRef = useRef(null);
@@ -222,6 +223,8 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
   /* ── Ответы ── */
   const pickOption = (option) => {
     if (option.backToMatching) {
+      const shown = [...messages].reverse().find((message) => message.role === "product");
+      setDismissedProduct(shown?.product || null);
       setVisibleCard(null);
       threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight, behavior: "smooth" });
       return;
@@ -412,16 +415,32 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
       setMatches(topic.state.matches || []);
       setMatchIndex(topic.state.matchIndex || 0);
     }
-    const index = messages.findIndex((message) => message.topicId === topic.id);
-    nodeRefs.current[index]?.scrollIntoView({ block: "start", behavior: "smooth" });
+    // ведём к карточке специалиста этой темы, а если её нет — к началу ветки
+    let index = messages.reduce(
+      (found, message, i) =>
+        message.topicId === topic.id && message.role === "rec" ? i : found,
+      -1
+    );
+    if (index < 0) index = messages.findIndex((message) => message.topicId === topic.id);
+    const node = nodeRefs.current[index];
+    if (!node) return;
+    requestAnimationFrame(() => node.scrollIntoView({ block: "start", behavior: "smooth" }));
   };
 
-  /* Главное действие под чатом — по карточке, на которой стоит скролл */
+  /* Карточка, к которой относятся действия под чатом.
+     Пока идёт опрос, действий нет — иначе кнопка «прилипает» от прошлого шага. */
+  const lastMessage = messages[messages.length - 1];
+  const activeCard = (() => {
+    if (lastMessage?.role === "product" && lastMessage.product !== dismissedProduct) {
+      return lastMessage;
+    }
+    if (stage !== "matched") return null;
+    if (visibleCard?.role === "rec") return visibleCard;
+    return [...messages].reverse().find((message) => message.role === "rec") || null;
+  })();
+
   const primaryAction = (() => {
-    // пока не прокручивали — берём карточку, только если она последняя в ленте
-    const last = messages[messages.length - 1];
-    const lastCard = last?.role === "rec" || last?.role === "product" ? last : null;
-    const card = visibleCard || lastCard;
+    const card = activeCard;
     if (card?.role === "product") {
       return {
         label: `Забрать за ${money(card.product.price)}`,
@@ -438,10 +457,6 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
 
   /* ── Что показываем в композере ── */
   const composer = (() => {
-    // из карточки материала должно быть понятно, как вернуться к подбору
-    if (visibleCard?.role === "product") {
-      return { options: [BACK_TO_MATCHING], back: BACK_TO_CATEGORIES };
-    }
     if (stage === "name") {
       return { options: [{ label: "Пропустить", skip: true }], placeholder: "Ваше имя.." };
     }
@@ -549,6 +564,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
         <Composer
           {...composer}
           primaryAction={primaryAction}
+          navExtra={activeCard?.role === "product" ? BACK_TO_MATCHING : null}
           draft={draft}
           disabled={typing}
           onPick={pickOption}
