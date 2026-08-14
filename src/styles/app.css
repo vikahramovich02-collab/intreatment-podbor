@@ -339,20 +339,135 @@ button {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+}
+
+/* Логотип и словарная карточка — как на сайте */
+.logo {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: clamp(2px, 0.16vw, 3px);
+  white-space: nowrap;
+}
+.logo__icon {
+  display: block;
+  width: clamp(20px, 1.5vw, 28px);
+  height: clamp(13px, 0.95vw, 18px);
+  flex: none;
+  pointer-events: none;
+}
+.logo__icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.logo__dot,
+.logo__ring {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.logo:hover .logo__dot {
+  animation: logo-orbit 2.4s linear infinite;
+}
+.logo:hover .logo__ring {
+  animation: logo-pulse 2.4s ease-in-out infinite;
+}
+@keyframes logo-orbit {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(5px, -2px);
+  }
+  50% {
+    transform: translate(10px, 0);
+  }
+  75% {
+    transform: translate(5px, 2px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+@keyframes logo-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo:hover .logo__dot,
+  .logo:hover .logo__ring {
+    animation: none;
+  }
+}
+.logo__text {
   font-family: var(--font-display);
   font-size: clamp(14px, 1.04vw, 20px);
   line-height: 0.9;
   text-transform: uppercase;
   color: var(--ink);
-  text-decoration: none;
-  white-space: nowrap;
+  cursor: pointer;
 }
-.header__logo .mark {
-  width: clamp(20px, 1.5vw, 28px);
-  height: clamp(11px, 0.8vw, 15px);
+
+.term-card {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(260px, 24vw, 340px);
+  padding: clamp(14px, 1.1vw, 20px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: clamp(8px, 0.52vw, 10px);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: saturate(160%) blur(16px);
+  text-align: left;
+  text-transform: none;
+  white-space: normal;
+  z-index: 60;
+  animation: fade-in 0.25s var(--ease) both;
+}
+.term-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.term-card__ipa {
+  font-size: clamp(15px, 1vw, 18px);
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.term-card__speaker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 50%;
+  transition: background 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.term-card__speaker:hover {
+  background: #f1f1f1;
+  transform: scale(1.06);
+}
+.term-card__speaker.is-playing {
+  background: var(--mint);
+}
+.term-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: clamp(12px, 0.78vw, 14px);
+  line-height: 1.45;
+  color: rgba(0, 0, 0, 0.66);
 }
 .header__burger {
   display: none;

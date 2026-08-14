@@ -55,7 +55,7 @@ export default function DoneScreen({ order, payment, onEnter, onRestart }) {
 
             <div className="done__actions">
               <button className="btn btn--primary btn--lg" type="button" onClick={onEnter}>
-                Войти на платформу
+                Вернуться на платформу
               </button>
               <button className="btn btn--ghost" type="button" onClick={onRestart}>
                 {isSession ? "Пройти подбор заново" : "Вернуться к подбору"}

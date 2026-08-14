@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Mark } from "./icons.jsx";
+import Logo from "./Logo.jsx";
 
 function MenuIcon() {
   return (
@@ -36,10 +37,9 @@ export default function Header({ onBack, backLabel = "Назад", onLogin, onHe
           <span />
         )}
 
-        <a className="header__logo" href="/" aria-label="InTreatment, на главную">
-          <Mark />
-          InTreatment
-        </a>
+        <div className="header__logo">
+          <Logo />
+        </div>
 
         <div className="header__right">
           <span className="header__hint">Уже есть аккаунт?</span>
