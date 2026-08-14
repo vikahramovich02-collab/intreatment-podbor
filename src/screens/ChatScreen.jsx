@@ -358,10 +358,13 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
       });
       return;
     }
-    say(withName("Спасибо, что рассказали. Выберите, что ближе к вашей ситуации."), {
-      topicId,
-      ...DUTY,
-    });
+    setStage("duty");
+    say(
+      withName(
+        "Спасибо, что рассказали. Расскажите чуть подробнее: что происходит и чего хочется сейчас?"
+      ),
+      { topicId, ...DUTY }
+    );
   };
 
   /* ── Редактирование ответа ── */
@@ -459,6 +462,15 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
   const composer = (() => {
     if (stage === "name") {
       return { options: [{ label: "Пропустить", skip: true }], placeholder: "Ваше имя.." };
+    }
+    // разговор с дежурным: только ответы и навигация, без меню категорий
+    if (stage === "duty") {
+      return {
+        options: [],
+        placeholder: "Расскажите..",
+        back: BACK_TO_CATEGORIES,
+        stepBack: history.current.length > 0,
+      };
     }
     if (stage === "category") {
       // «Скорая помощь» и дежурный психолог живут в шапке, в меню их не дублируем
