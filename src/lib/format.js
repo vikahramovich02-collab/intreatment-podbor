@@ -14,22 +14,43 @@ export const money = (value) => `${value.toLocaleString("ru-RU")} ₽`;
 /* Часовые пояса клиентов. Расписание психологов хранится в минском времени (UTC+3).
    Город не спрашиваем — достаточно смещения. */
 export const BASE_UTC = 3;
-export const ZONES = [
-  { id: "utc-4", utc: -4, city: "Нью-Йорк" },
-  { id: "utc0", utc: 0, city: "Лондон" },
-  { id: "utc1", utc: 1, city: "Берлин" },
-  { id: "utc2", utc: 2, city: "Калининград" },
-  { id: "utc3", utc: 3, city: "Москва, Санкт-Петербург" },
-  { id: "utc4", utc: 4, city: "Самара" },
-  { id: "utc5", utc: 5, city: "Екатеринбург" },
-  { id: "utc6", utc: 6, city: "Омск" },
-  { id: "utc7", utc: 7, city: "Красноярск" },
-  { id: "utc8", utc: 8, city: "Иркутск" },
-  { id: "utc9", utc: 9, city: "Якутск" },
-  { id: "utc10", utc: 10, city: "Владивосток" },
-  { id: "utc11", utc: 11, city: "Магадан" },
-  { id: "utc12", utc: 12, city: "Камчатка" },
+export const ZONE_GROUPS = [
+  {
+    title: "Россия",
+    zones: [
+      { id: "ru2", utc: 2, city: "Калининград" },
+      { id: "ru3", utc: 3, city: "Москва, Санкт-Петербург" },
+      { id: "ru4", utc: 4, city: "Самара, Ижевск" },
+      { id: "ru5", utc: 5, city: "Екатеринбург, Уфа" },
+      { id: "ru6", utc: 6, city: "Омск" },
+      { id: "ru7", utc: 7, city: "Новосибирск, Красноярск" },
+      { id: "ru8", utc: 8, city: "Иркутск" },
+      { id: "ru9", utc: 9, city: "Якутск" },
+      { id: "ru10", utc: 10, city: "Владивосток" },
+      { id: "ru11", utc: 11, city: "Магадан, Сахалин" },
+      { id: "ru12", utc: 12, city: "Камчатка" },
+    ],
+  },
+  {
+    title: "Соседние страны",
+    zones: [
+      { id: "by3", utc: 3, city: "Минск" },
+      { id: "ge4", utc: 4, city: "Тбилиси, Ереван, Баку" },
+      { id: "kz5", utc: 5, city: "Алматы, Ташкент" },
+    ],
+  },
+  {
+    title: "Европа и США",
+    zones: [
+      { id: "eu0", utc: 0, city: "Лондон, Лиссабон" },
+      { id: "eu1", utc: 1, city: "Берлин, Прага, Белград" },
+      { id: "us-4", utc: -4, city: "Нью-Йорк" },
+      { id: "us-7", utc: -7, city: "Лос-Анджелес" },
+    ],
+  },
 ];
+
+export const ZONES = ZONE_GROUPS.flatMap((group) => group.zones);
 
 export const zoneShort = (zone) => `UTC${zone.utc >= 0 ? "+" : ""}${zone.utc}`;
 export const zoneLabel = (zone) => `${zoneShort(zone)} · ${zone.city}`;

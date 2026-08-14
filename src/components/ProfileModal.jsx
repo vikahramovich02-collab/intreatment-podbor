@@ -8,6 +8,7 @@ import {
   zoneShort,
   BASE_UTC,
   ZONES,
+  ZONE_GROUPS,
   zoneLabel,
   shiftSlot,
 } from "../lib/format.js";
@@ -18,7 +19,7 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
   const scheduleRef = useRef(null);
 
   /* Пояс определяем автоматически, клиент может поменять — слоты пересчитываются */
-  const [zone, setZone] = useState(ZONES.find((item) => item.utc === BASE_UTC));
+  const [zone, setZone] = useState(ZONES.find((item) => item.id === "ru3"));
   const [zoneOpen, setZoneOpen] = useState(false);
 
   const days = useMemo(() => {
@@ -265,10 +266,14 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
                         setZoneOpen(false);
                       }}
                     >
-                      {ZONES.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {zoneLabel(item)}
-                        </option>
+                      {ZONE_GROUPS.map((group) => (
+                        <optgroup key={group.title} label={group.title}>
+                          {group.zones.map((item) => (
+                            <option key={item.id} value={item.id}>
+                              {zoneLabel(item)}
+                            </option>
+                          ))}
+                        </optgroup>
                       ))}
                     </select>
                   </label>
