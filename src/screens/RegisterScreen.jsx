@@ -11,7 +11,7 @@ export default function RegisterScreen({ order, holdStartedAt, onBack, onDone })
     <div className="app">
       <Header onBack={onBack} backLabel="Назад" />
 
-      <main className="funnel">
+      <main className="funnel register">
         <div className="column funnel__column">
           <div className="layout-2col">
             <div>
