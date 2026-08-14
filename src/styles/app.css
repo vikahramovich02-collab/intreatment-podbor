@@ -354,6 +354,18 @@ button {
   width: clamp(20px, 1.5vw, 28px);
   height: clamp(11px, 0.8vw, 15px);
 }
+.header__burger {
+  display: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  color: var(--ink);
+}
+.header__menu {
+  display: none;
+}
+
 .header__nav {
   display: flex;
   align-items: center;
@@ -2057,6 +2069,31 @@ button {
   .header__inner {
     gap: 10px;
   }
+  /* Разделы уезжают в меню, в шапке остаются логотип и кнопка меню */
+  .header__nav,
+  .header__right,
+  .header__inner > .btn--ghost {
+    display: none;
+  }
+  .header__burger {
+    display: grid;
+    margin-left: auto;
+  }
+  .header__menu {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 0 10px;
+    border-top: 1px solid var(--line);
+  }
+  .header__menu button {
+    padding: 12px 4px;
+    text-align: left;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .header__menu button + button {
+    border-top: 1px solid var(--line);
+  }
   .header__logo {
     position: static;
     transform: none;
@@ -2154,9 +2191,34 @@ button {
   .msg__edit {
     opacity: 1;
   }
+  /* На телефоне зона ответов не должна занимать пол-экрана */
   .options {
     grid-template-columns: minmax(0, 1fr);
-    max-height: 46vh;
+    max-height: 24vh;
+    gap: 6px;
+  }
+  .option {
+    min-height: 40px;
+    padding: 9px 14px;
+    font-size: 14px;
+  }
+  .composer__inner {
+    gap: 6px;
+    padding-top: 10px;
+  }
+  .composer__input {
+    height: 48px;
+  }
+  .composer {
+    padding-bottom: 10px;
+  }
+  .composer__primary {
+    min-height: 42px;
+    font-size: 14px;
+  }
+  .composer__nav,
+  .subscribe__open {
+    font-size: 12px;
   }
   .modal__hero {
     flex-direction: column;
