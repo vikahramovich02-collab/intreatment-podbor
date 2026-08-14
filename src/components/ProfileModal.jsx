@@ -58,8 +58,11 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
   }, []);
 
   useEffect(() => {
-    if (focus === "schedule") {
-      scheduleRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    if (focus !== "schedule") return;
+    // открываем сразу на календаре: листать вверх пользователь может сам
+    const body = scheduleRef.current?.closest(".modal__body");
+    if (body && scheduleRef.current) {
+      body.scrollTop = scheduleRef.current.offsetTop - body.offsetTop;
     }
   }, [focus, person.id]);
 

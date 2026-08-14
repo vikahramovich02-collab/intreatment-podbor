@@ -130,7 +130,9 @@ export default function Composer({
                   aria-pressed={mode === "multi" ? isChecked : undefined}
                   onClick={() => {
                     if (blocked) return flashConsent();
-                    return mode === "multi" ? toggle(option) : onPick(option);
+                    if (mode === "multi") return toggle(option);
+                    setText("");
+                    return onPick(option);
                   }}
                 >
                   {mode === "multi" && (

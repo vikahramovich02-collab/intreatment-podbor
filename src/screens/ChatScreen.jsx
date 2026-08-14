@@ -29,6 +29,7 @@ const DUTY = { signature: "Дежурный психолог Дарья" };
 const BACK_TO_CATEGORIES = { label: "Вернуться к темам", toCategories: true };
 const STEP_BACK = { label: "Шаг назад", stepBack: true };
 const NEXT_SPECIALIST = { label: "Показать другого специалиста", nextPerson: true };
+const BACK_TO_MATCHING = { label: "Вернуться к подбору", backToMatching: true };
 const NEW_TOPIC = { label: "Обсудить другую тему", newTopic: true };
 
 /* Свободный текст сопоставляем с категориями алгоритма по ключевым словам */
@@ -88,6 +89,18 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
     // разговор пошёл дальше — прежняя карточка больше не «активная»
     setVisibleCard(null);
   }, [messages.length, typing]);
+
+  /* Запоминаем, на чём остановились в текущей теме */
+  useEffect(() => {
+    if (!topicId) return;
+    setTopics((prev) =>
+      prev.map((topic) =>
+        topic.id === topicId
+          ? { ...topic, state: { stage, category, subLabel, vCode, matches, matchIndex } }
+          : topic
+      )
+    );
+  }, [topicId, stage, category, subLabel, vCode, matches, matchIndex]);
 
   const clearTimers = () => {
     timers.current.forEach(clearTimeout);
@@ -208,6 +221,11 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
 
   /* ── Ответы ── */
   const pickOption = (option) => {
+    if (option.backToMatching) {
+      setVisibleCard(null);
+      threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight, behavior: "smooth" });
+      return;
+    }
     if (option.stepBack) {
       const previous = history.current.pop();
       if (previous) restore(previous);
@@ -349,15 +367,15 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
     if (!message?.snapshot) return;
     clearTimers();
     setTyping(false);
-    setMessages(messages.slice(0, index));
+    // возвращаемся в ту точку сценария, но накопленный диалог сохраняем
     setStage(message.snapshot.stage);
     setCategory(message.snapshot.category);
     setSubLabel(message.snapshot.subLabel);
     setVCode(message.snapshot.vCode);
     setTopicId(message.snapshot.topicId);
-    setTopics(message.snapshot.topics);
     setName(message.snapshot.name);
     setDraft({ text: message.text, at: Date.now() });
+    say(withName("Хорошо, вернёмся к этому вопросу."), { topicId: message.snapshot.topicId });
   };
 
   const onThreadScroll = () => {
@@ -383,6 +401,17 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
   };
 
   const scrollToTopic = (topic) => {
+    clearTimers();
+    setTyping(false);
+    setTopicId(topic.id);
+    if (topic.state) {
+      setStage(topic.state.stage);
+      setCategory(topic.state.category);
+      setSubLabel(topic.state.subLabel);
+      setVCode(topic.state.vCode);
+      setMatches(topic.state.matches || []);
+      setMatchIndex(topic.state.matchIndex || 0);
+    }
     const index = messages.findIndex((message) => message.topicId === topic.id);
     nodeRefs.current[index]?.scrollIntoView({ block: "start", behavior: "smooth" });
   };
@@ -401,17 +430,18 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
     }
     const person = card?.person || (stage === "matched" ? matches[matchIndex] : null);
     if (!person) return null;
-    const nearest = nearestSlotLabel(person);
     return {
-      label: nearest
-        ? `Записаться к ${dative(person.name)} на ${nearest}`
-        : `Записаться к ${dative(person.name)}`,
+      label: "Выбрать дату и время",
       onClick: () => openProfile(person, "schedule"),
     };
   })();
 
   /* ── Что показываем в композере ── */
   const composer = (() => {
+    // из карточки материала должно быть понятно, как вернуться к подбору
+    if (visibleCard?.role === "product") {
+      return { options: [BACK_TO_MATCHING], back: BACK_TO_CATEGORIES };
+    }
     if (stage === "name") {
       return { options: [{ label: "Пропустить", skip: true }], placeholder: "Ваше имя.." };
     }
