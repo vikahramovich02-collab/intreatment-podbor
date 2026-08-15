@@ -32,25 +32,10 @@ const NEXT_SPECIALIST = { label: "Показать другого специал
 const BACK_TO_MATCHING = { label: "Вернуться к подбору", backToMatching: true };
 const NEW_TOPIC = { label: "Обсудить другую тему", newTopic: true };
 
-/* Свободный текст сопоставляем с категориями алгоритма по ключевым словам */
-const KEYWORDS = [
-  [/отношени|партн[её]р|муж|жена|расстав|развод|конфликт|близк/i, "p2"],
-  [/ребён|ребен|дет|подрост|мам|родительств|материнств/i, "p3"],
-  [/перемен|переезд|работ|уволил|измен|неопредел/i, "p1"],
-  [/реализ|проект|творч|карьер|самозван|проявл/i, "p4"],
-  [/боле|тело|психосомат|давлени|аллерг|астм/i, "p7"],
-  [/самооцен|себе не нравл|осуд|ошиб|несовершен/i, "p8"],
-  [/смысл|тревог|паник|депресс|апати|нет сил|выгора/i, "p5"],
-  [/травм|насили|войн|жестокост|болезненные воспомин/i, "p6"],
-];
-
-const categoryOfText = (text) => {
-  const hit = KEYWORDS.find(([pattern]) => pattern.test(text));
-  return hit ? hit[1] : null;
-};
-
-const labelOfCategory = (code) =>
-  (MAIN_CATEGORIES.find(([, key]) => key === code) || [])[0] || "";
+/* Мок: разбор свободного текста возьмёт на себя агентская система, её пока нет.
+   Поэтому на любое сообщение отвечаем одинаково — чтобы не ломать флоу. */
+const MOCK_REPLY =
+  "Спасибо, что рассказали. Передала это дежурному психологу — он посмотрит ваш запрос и вернётся с подходящими специалистами.";
 
 export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) {
   const [messages, setMessages] = useState([
@@ -340,31 +325,9 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
       return;
     }
 
-    if (stage === "situation") {
-      // описал своими словами — отвечает дежурный психолог и показывает специалистов
-      showMatch(vCode, topicId, 0, DUTY);
-      return;
-    }
-
-    // В любой момент свободный текст пробуем сопоставить с категорией алгоритма
-    const guess = categoryOfText(value);
-    if (guess) {
-      const id = openTopic(labelOfCategory(guess));
-      setCategory(guess);
-      setStage("sub");
-      say(withName(`Похоже, это про «${labelOfCategory(guess)}». ${ASK_SUB}`), {
-        topicId: id,
-        ...DUTY,
-      });
-      return;
-    }
+    // Один и тот же ответ на любой текст — до подключения агентской системы
     setStage("duty");
-    say(
-      withName(
-        "Спасибо, что рассказали. Расскажите чуть подробнее: что происходит и чего хочется сейчас?"
-      ),
-      { topicId, ...DUTY }
-    );
+    say(withName(MOCK_REPLY), { topicId, ...DUTY });
   };
 
   /* ── Редактирование ответа ── */
