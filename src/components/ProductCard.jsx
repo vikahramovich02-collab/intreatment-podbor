@@ -3,7 +3,7 @@ import { money } from "../lib/format.js";
 
 /* Выбранный в попапе материал приходит в ленту как сообщение от InTreatment —
    дальше он покупается тем же путём, что и сессия. */
-export default function ProductCard({ product, time }) {
+export default function ProductCard({ product, time, onBuy }) {
   return (
     <article className="msg rec">
       <div className="msg__head">
@@ -13,7 +13,20 @@ export default function ProductCard({ product, time }) {
         <b className="msg__head-name">InTreatment</b>
       </div>
 
-      <div className="rec__card">
+      {/* Карточка кликается целиком — как у психолога */}
+      <div
+        className="rec__card rec__card--clickable"
+        role="button"
+        tabIndex={0}
+        aria-label={`Забрать: ${product.title}`}
+        onClick={() => onBuy?.(product)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onBuy?.(product);
+          }
+        }}
+      >
         <div className="rec__head">
           <b className="rec__name">{product.title}</b>
           <span className="rec__role">

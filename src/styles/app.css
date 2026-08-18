@@ -341,10 +341,7 @@ button {
   padding-bottom: clamp(10px, 0.83vw, 16px);
 }
 .header__logo {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  margin-right: auto;
 }
 
 /* Логотип и словарная карточка — как на сайте */
@@ -1120,6 +1117,23 @@ button {
   border-radius: var(--r-lg);
   background: var(--paper);
 }
+/* Карточка кликается целиком: мягкий отклик, но без «кнопочного» вида */
+.rec__card--clickable {
+  cursor: pointer;
+  transition: border-color 0.16s var(--ease), box-shadow 0.16s var(--ease);
+}
+.rec__card--clickable:hover {
+  border-color: rgba(0, 0, 0, 0.22);
+  box-shadow: 0 6px 20px rgba(45, 44, 42, 0.06);
+}
+.rec__card--clickable:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.rec__card--clickable:active {
+  border-color: rgba(0, 0, 0, 0.22);
+}
+
 .rec__head {
   display: flex;
   flex-direction: column;
@@ -2237,8 +2251,6 @@ button {
     font-size: 13px;
   }
   .header__logo {
-    position: static;
-    transform: none;
     margin-right: auto;
   }
   .header__right {
@@ -2442,6 +2454,25 @@ button {
   .modal__hero h2,
   .modal__hero--plain h2 {
     font-size: 24px;
+  }
+  /* Сверху попапа нужен воздух: крестик выше, заголовок не липнет к тексту */
+  .modal__close {
+    top: 18px;
+    right: 16px;
+  }
+  .modal__hero {
+    padding: 30px 60px 22px 20px;
+  }
+  .modal__hero--plain {
+    padding-top: 34px;
+    padding-bottom: 26px;
+  }
+  .modal__hero--plain .modal__hero-role {
+    margin-top: 12px;
+    line-height: 1.5;
+  }
+  .modal__body > .section:first-child {
+    padding-top: 6px;
   }
   /* Кабинет: разделы — горизонтальной лентой */
   .cabinet__nav {

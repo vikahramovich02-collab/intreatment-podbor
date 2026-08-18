@@ -530,7 +530,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
               if (message.role === "product") {
                 return (
                   <div key={index} ref={setNode}>
-                    <ProductCard product={message.product} />
+                    <ProductCard product={message.product} onBuy={onBuyProduct} />
                   </div>
                 );
               }

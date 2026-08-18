@@ -20,26 +20,26 @@ export default function Header({ onBack, backLabel = "Назад", onLogin, onHe
   return (
     <header className="header">
       <div className="header__inner">
-        {onBack ? (
+        {onBack && (
           <button className="btn btn--ghost" type="button" onClick={onBack}>
             {backLabel}
           </button>
-        ) : onHelp ? (
-          <nav className="header__nav" aria-label="Быстрые разделы">
-            {/* Экстренная помощь живёт первым блоком внутри этого же попапа */}
-            <button type="button" onClick={() => onHelp("list")}>
-              Самопомощь
-            </button>
-          </nav>
-        ) : (
-          <span />
         )}
 
+        {/* Логотип у левого края, разделы и вход — справа */}
         <div className="header__logo">
           <Logo onHome={onHome} />
         </div>
 
         <div className="header__right">
+          {onHelp && (
+            <nav className="header__nav" aria-label="Быстрые разделы">
+              {/* Экстренная помощь живёт первым блоком внутри этого же попапа */}
+              <button type="button" onClick={() => onHelp("list")}>
+                Самопомощь
+              </button>
+            </nav>
+          )}
           <span className="header__hint">Уже есть аккаунт?</span>
           <button className="btn btn--quiet" type="button" onClick={onLogin}>
             <Mark />

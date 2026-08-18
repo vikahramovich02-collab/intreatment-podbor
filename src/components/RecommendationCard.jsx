@@ -78,8 +78,22 @@ export default function RecommendationCard({ person, lead, onOpen, time }) {
       <VideoCircle person={person} />
       {person.video && <p className="rec__videohint">Видео-визитка · 30 секунд</p>}
 
-      {/* Карточка по макету: имя сверху, снизу описание со ссылкой и плашки справа */}
-      <div className="rec__card">
+      {/* Карточка по макету: имя сверху, снизу описание со ссылкой и плашки справа.
+          Нажать можно на всю карточку целиком — откроется профиль */
+      }
+      <div
+        className="rec__card rec__card--clickable"
+        role="button"
+        tabIndex={0}
+        aria-label={`Открыть профиль: ${person.name}`}
+        onClick={() => onOpen(person, "about")}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onOpen(person, "about");
+          }
+        }}
+      >
         <div className="rec__head">
           <b className="rec__name">{person.name}</b>
           <span className="rec__role">{person.role}</span>
@@ -99,7 +113,10 @@ export default function RecommendationCard({ person, lead, onOpen, time }) {
               <button
                 type="button"
                 className="rec__price rec__price--action"
-                onClick={() => onOpen(person, "schedule")}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onOpen(person, "schedule");
+                }}
               >
                 Ближайшая запись: {nearest}
               </button>
