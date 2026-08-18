@@ -5,14 +5,14 @@ import { money } from "../lib/format.js";
 
 /* Личный кабинет — точка, в которой заканчивается путь подбора и начинается
    платформа. Оплата происходит уже здесь: до неё запись висит неоплаченной. */
-export default function CabinetScreen({ order, payment, holdStartedAt, onPay, onRestart }) {
+export default function CabinetScreen({ order, payment, holdStartedAt, onPay, onRestart, onHome }) {
   const [tab, setTab] = useState("next");
   const isSession = order.kind === "session";
   const { name } = order;
 
   return (
     <div className="app">
-      <Header />
+      <Header onHome={onHome} />
 
       <main className="funnel">
         <div className="column" style={{ maxWidth: 1120 }}>

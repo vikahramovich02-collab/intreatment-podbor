@@ -2,13 +2,13 @@ import Header from "../components/Header.jsx";
 import { CheckIcon } from "../components/icons.jsx";
 import { money } from "../lib/format.js";
 
-export default function DoneScreen({ order, payment, onEnter, onRestart }) {
+export default function DoneScreen({ order, payment, onEnter, onHome }) {
   const isSession = order.kind === "session";
   const { name } = order;
 
   return (
     <div className="app">
-      <Header />
+      <Header onHome={onHome} />
 
       <main className="funnel">
         <div className="column">
@@ -56,9 +56,6 @@ export default function DoneScreen({ order, payment, onEnter, onRestart }) {
             <div className="done__actions">
               <button className="btn btn--primary btn--lg" type="button" onClick={onEnter}>
                 Вернуться на платформу
-              </button>
-              <button className="btn btn--ghost" type="button" onClick={onRestart}>
-                {isSession ? "Пройти подбор заново" : "Вернуться к подбору"}
               </button>
             </div>
           </div>

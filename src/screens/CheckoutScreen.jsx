@@ -15,7 +15,7 @@ const METHODS = [
 
 /* Компактный чек: кто и когда, способ оплаты, стоимость, промокод, итог.
    Данные карты просим только на шаге оплаты, чтобы экран не пугал формой. */
-export default function CheckoutScreen({ order, holdStartedAt, account, onBack, onPaid }) {
+export default function CheckoutScreen({ order, holdStartedAt, account, onBack, onPaid, onHome }) {
   const [method, setMethod] = useState("ru");
   const [promoOpen, setPromoOpen] = useState(false);
   const [promo, setPromo] = useState("");
@@ -101,7 +101,7 @@ export default function CheckoutScreen({ order, holdStartedAt, account, onBack, 
 
   return (
     <div className="app">
-      <Header onBack={onBack} backLabel="Назад" />
+      <Header onBack={onBack} backLabel="Назад" onHome={onHome} />
 
       <main className="funnel">
         <div className="column">

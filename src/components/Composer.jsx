@@ -8,6 +8,7 @@ export default function Composer({
   options = [],
   mode = "single",
   submitLabel = "Продолжить",
+  submitLabelShort = null, // короткая подпись для телефона
   placeholder = "Расскажите..",
   disabled = false,
   draft = null,
@@ -191,7 +192,14 @@ export default function Composer({
             aria-disabled={blocked}
           >
             <Mark />
-            {mode === "multi" && checked.length ? submitLabel : "Отправить"}
+            {mode === "multi" && checked.length ? (
+              <>
+                <span className="is-wide">{submitLabel}</span>
+                <span className="is-narrow">{submitLabelShort || submitLabel}</span>
+              </>
+            ) : (
+              "Отправить"
+            )}
           </button>
         </form>
 

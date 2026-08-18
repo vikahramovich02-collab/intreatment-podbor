@@ -1,24 +1,22 @@
-import { useState } from "react";
 import { Mark } from "./icons.jsx";
 import Logo from "./Logo.jsx";
 
-function MenuIcon() {
+function LoginIcon() {
   return (
     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
       <path
-        d="M4 7h16M4 12h16M4 17h16"
+        d="M15 3h3a2 2 0 012 2v14a2 2 0 01-2 2h-3M10 17l5-5-5-5M15 12H3"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.6"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
 }
 
-export default function Header({ onBack, backLabel = "Назад", onLogin, onHelp }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-
+export default function Header({ onBack, backLabel = "Назад", onLogin, onHelp, onHome }) {
   return (
     <header className="header">
       <div className="header__inner">
@@ -38,7 +36,7 @@ export default function Header({ onBack, backLabel = "Назад", onLogin, onHe
         )}
 
         <div className="header__logo">
-          <Logo />
+          <Logo onHome={onHome} />
         </div>
 
         <div className="header__right">
@@ -47,55 +45,12 @@ export default function Header({ onBack, backLabel = "Назад", onLogin, onHe
             <Mark />
             Войти
           </button>
-        </div>
-
-        {/* На телефоне разделы прячутся в меню */}
-        <button
-          className="header__burger"
-          type="button"
-          aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((value) => !value)}
-        >
-          <MenuIcon />
-        </button>
-      </div>
-
-      {menuOpen && (
-        <div className="header__menu">
-          {onHelp && (
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false);
-                onHelp("list");
-              }}
-            >
-              Самопомощь
-            </button>
-          )}
-          {onBack && (
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false);
-                onBack();
-              }}
-            >
-              {backLabel}
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => {
-              setMenuOpen(false);
-              onLogin?.();
-            }}
-          >
-            Войти
+          {/* На телефоне вход — иконкой рядом с «Самопомощь» */}
+          <button className="header__login" type="button" aria-label="Войти" onClick={onLogin}>
+            <LoginIcon />
           </button>
         </div>
-      )}
+      </div>
     </header>
   );
 }

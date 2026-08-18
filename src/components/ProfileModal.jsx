@@ -131,7 +131,9 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
             </p>
             <div className="modal__hero-meta">
               <span className="pill-meta">{money(person.price)} • 1 час</span>
-              {nearest && <span className="pill-meta">Ближайшая запись: {nearest}</span>}
+              {nearest && (
+                <span className="pill-meta pill-meta--nearest">Ближайшая запись: {nearest}</span>
+              )}
             </div>
           </div>
         </div>

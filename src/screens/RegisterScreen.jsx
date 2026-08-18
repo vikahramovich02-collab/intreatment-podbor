@@ -4,12 +4,12 @@ import BookingSummary, { HoldTimer } from "../components/BookingSummary.jsx";
 import { ArrowLeft } from "../components/icons.jsx";
 
 /* Вход по почте или через Яндекс ID / VK ID. */
-export default function RegisterScreen({ order, holdStartedAt, onBack, onDone }) {
+export default function RegisterScreen({ order, holdStartedAt, onBack, onDone, onHome }) {
   const [email, setEmail] = useState("");
 
   return (
     <div className="app">
-      <Header onBack={onBack} backLabel="Назад" />
+      <Header onBack={onBack} backLabel="Назад" onHome={onHome} />
 
       <main className="funnel register">
         <div className="column funnel__column">
@@ -17,7 +17,7 @@ export default function RegisterScreen({ order, holdStartedAt, onBack, onDone })
             <div>
               <div className="funnel__head">
                 <button className="funnel__back" type="button" onClick={onBack}>
-                  <ArrowLeft /> {order.kind === "session" ? "К выбору времени" : "К самопомощи"}
+                  <ArrowLeft /> Назад
                 </button>
                 <h1 className="funnel__title">Создайте аккаунт</h1>
                 <p className="funnel__sub">

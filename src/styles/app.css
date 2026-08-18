@@ -87,6 +87,12 @@ button {
   border: 0;
 }
 
+/* Тап по карточкам не подсвечиваем — они не кликабельны целиком */
+.rec,
+.rec__card {
+  -webkit-tap-highlight-color: transparent;
+}
+
 .app {
   display: flex;
   flex-direction: column;
@@ -346,8 +352,13 @@ button {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: clamp(2px, 0.16vw, 3px);
   white-space: nowrap;
+}
+.logo__link {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(2px, 0.16vw, 3px);
+  color: var(--ink);
 }
 .logo__icon {
   display: block;
@@ -415,6 +426,7 @@ button {
 }
 
 .term-card {
+  display: none;
   position: absolute;
   top: calc(100% + 14px);
   left: 50%;
@@ -430,6 +442,12 @@ button {
   white-space: normal;
   z-index: 60;
   animation: fade-in 0.25s var(--ease) both;
+}
+/* Карточка — только там, где есть наведение: на телефоне логотип просто ссылка */
+@media (hover: hover) {
+  .logo:hover .term-card {
+    display: block;
+  }
 }
 .term-card__head {
   display: flex;
@@ -469,16 +487,13 @@ button {
   line-height: 1.45;
   color: rgba(0, 0, 0, 0.66);
 }
-.header__burger {
+.header__login {
   display: none;
   place-items: center;
   width: 36px;
   height: 36px;
   border-radius: var(--r-sm);
   color: var(--ink);
-}
-.header__menu {
-  display: none;
 }
 
 .header__nav {
@@ -905,6 +920,10 @@ button {
 .consent__text a:hover {
   color: var(--ink);
   text-decoration-color: var(--ink);
+}
+
+.is-narrow {
+  display: none;
 }
 
 .composer__nav {
@@ -2206,30 +2225,16 @@ button {
   .header__inner {
     gap: 10px;
   }
-  /* Разделы уезжают в меню, в шапке остаются логотип и кнопка меню */
-  .header__nav,
-  .header__right,
-  .header__inner > .btn--ghost {
+  /* В шапке: «Самопомощь», логотип по центру и вход иконкой */
+  .header__hint,
+  .header__right .btn--quiet {
     display: none;
   }
-  .header__burger {
+  .header__login {
     display: grid;
-    margin-left: auto;
   }
-  .header__menu {
-    display: flex;
-    flex-direction: column;
-    padding: 6px 0 10px;
-    border-top: 1px solid var(--line);
-  }
-  .header__menu button {
-    padding: 12px 4px;
-    text-align: left;
-    font-size: 15px;
-    color: var(--ink);
-  }
-  .header__menu button + button {
-    border-top: 1px solid var(--line);
+  .header__nav button {
+    font-size: 13px;
   }
   .header__logo {
     position: static;
@@ -2353,6 +2358,27 @@ button {
     min-height: 42px;
     font-size: 14px;
   }
+  .is-wide {
+    display: none;
+  }
+  .is-narrow {
+    display: inline;
+  }
+  /* Кнопка отправки плотнее — на телефоне место дорогое */
+  .composer__input {
+    padding-left: 16px;
+    gap: 8px;
+  }
+  .composer__input .btn {
+    height: 40px;
+    padding: 0 12px;
+    gap: 6px;
+    font-size: 14px;
+  }
+  .composer__input .btn .mark {
+    width: 20px;
+    height: 11px;
+  }
   .composer__nav,
   .subscribe__open {
     font-size: 12px;
@@ -2391,6 +2417,27 @@ button {
   /* Заголовок модалки не должен заезжать под крестик */
   .modal__hero {
     padding-right: 60px;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+  }
+  .modal__hero .avatar--lg {
+    width: 56px;
+    height: 56px;
+  }
+  .modal__hero h2 {
+    font-size: 20px;
+  }
+  .modal__hero-role {
+    margin-top: 2px;
+    font-size: 13px;
+  }
+  .modal__hero-meta {
+    margin-top: 10px;
+  }
+  /* Ближайшая запись есть в карточке — в модалке на телефоне лишняя */
+  .pill-meta--nearest {
+    display: none;
   }
   .modal__hero h2,
   .modal__hero--plain h2 {

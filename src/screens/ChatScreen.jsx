@@ -37,7 +37,7 @@ const NEW_TOPIC = { label: "Обсудить другую тему", newTopic: t
 const MOCK_REPLY =
   "Спасибо, что рассказали. Передала это дежурному психологу — он посмотрит ваш запрос и вернётся с подходящими специалистами.";
 
-export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) {
+export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, onHome, reopen, resetAt }) {
   const [messages, setMessages] = useState([
     { role: "assistant", text: `${GREETING}\n\n${ASK_NAME}`, time: now(), topicId: null },
   ]);
@@ -69,6 +69,28 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
   const timers = useRef([]);
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
+
+  useEffect(() => {
+    if (reopen?.person) setModal({ person: reopen.person, focus: "schedule" });
+  }, [reopen?.at]);
+
+  /* Клик по логотипу — начать разговор заново */
+  useEffect(() => {
+    if (!resetAt) return;
+    clearTimers();
+    setTyping(false);
+    setMessages([{ role: "assistant", text: `${GREETING}\n\n${ASK_NAME}`, time: now(), topicId: null }]);
+    setStage("name");
+    setCategory(null);
+    setSubLabel(null);
+    setVCode(null);
+    setName("");
+    setMatches([]);
+    setTopics([]);
+    setTopicId(null);
+    setModal(null);
+    history.current = [];
+  }, [resetAt]);
 
   useEffect(() => {
     threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight, behavior: "smooth" });
@@ -467,6 +489,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
         options: [...points.map((label) => ({ label })), { label: "Ничего из этого", none: true }],
         mode: "multi",
         submitLabel: "Узнаю себя в этих ситуациях",
+        submitLabelShort: "Узнаю",
         placeholder: "Опишите свою ситуацию..",
         back: BACK_TO_CATEGORIES,
         stepBack: history.current.length > 0,
@@ -482,10 +505,10 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis }) 
 
   return (
     <div className="app app--fixed">
-      <Header onLogin={onLogin} onHelp={(focus) => setHelpOpen(focus || "list")} />
+      <Header onLogin={onLogin} onHome={onHome} onHelp={(focus) => setHelpOpen(focus || "list")} />
 
       <div className="chat">
-        <TopicsPanel topics={topics} activeId={visibleTopic || topicId} onPick={scrollToTopic} />
+        <TopicsPanel topics={topics} activeId={topicId} onPick={scrollToTopic} />
 
         <div className="chat__thread" ref={threadRef} onScroll={onThreadScroll}>
           <div className="column chat__thread-inner">
