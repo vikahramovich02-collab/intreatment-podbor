@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Mark, CheckIcon, ArrowLeft } from "./icons.jsx";
 import SubscribeModal from "./SubscribeModal.jsx";
 
@@ -32,6 +32,15 @@ export default function Composer({
     setTimeout(() => setFlash(false), 1200);
   };
   const [checked, setChecked] = useState([]);
+  /* Список вариантов длиннее экрана — показываем затухание снизу,
+     чтобы было видно, что его можно листать */
+  const listRef = useRef(null);
+  const [more, setMore] = useState(false);
+  const syncMore = () => {
+    const node = listRef.current;
+    if (!node) return;
+    setMore(node.scrollHeight - node.scrollTop - node.clientHeight > 6);
+  };
 
   /* Ответ вернули на редактирование — подставляем его текст в поле */
   useEffect(() => {
@@ -42,6 +51,7 @@ export default function Composer({
 
   useEffect(() => {
     setChecked([]);
+    requestAnimationFrame(syncMore);
   }, [options.map((option) => option.label).join("|")]);
 
   /* «Ничего из этого» — взаимоисключающий пункт: снимает остальные и снимается сам */
@@ -126,8 +136,12 @@ export default function Composer({
 
         {options.length > 0 && (
           <div
-            className={`options ${options.length > 3 ? "" : "options--single"}`.trim()}
+            ref={listRef}
+            className={`options ${options.length > 3 ? "" : "options--single"} ${
+              more ? "has-more" : ""
+            }`.trim()}
             role={mode === "multi" ? "group" : undefined}
+            onScroll={syncMore}
           >
             {options.map((option) => {
               const isChecked = checked.includes(option.label);

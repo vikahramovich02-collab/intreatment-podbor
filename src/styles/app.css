@@ -733,9 +733,30 @@ button {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   max-height: 38vh;
+  padding-right: 8px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* Список листается — бегунок держим видимым, иначе непонятно, что есть продолжение */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.22) transparent;
 }
+.options::-webkit-scrollbar {
+  width: 6px;
+  -webkit-appearance: none;
+}
+.options::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.22);
+}
+.options::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* Пока список не долистан до конца — нижний край мягко тает */
+.options.has-more {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent 100%);
+}
+
 .options--single {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -1001,6 +1022,21 @@ button {
   max-height: calc(100dvh - var(--header-h) - 120px);
   overflow-y: auto;
   z-index: 10;
+  /* Бегунок держим видимым: иначе непонятно, что список листается */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.22) transparent;
+}
+.topics::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  -webkit-appearance: none;
+}
+.topics::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.22);
+}
+.topics::-webkit-scrollbar-track {
+  background: transparent;
 }
 .topics__title {
   margin-bottom: 12px;
@@ -2287,10 +2323,17 @@ button {
     position: static;
     width: auto;
     max-height: none;
-    padding: 10px var(--gutter) 0;
+    padding: 10px var(--gutter) 6px;
     overflow-x: auto;
     overflow-y: hidden;
     display: block;
+    /* Лента листается вбок — бегунок оставляем на виду */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.22) transparent;
+  }
+  .topics::-webkit-scrollbar {
+    height: 4px;
+    -webkit-appearance: none;
   }
   .topics__title {
     display: none;
@@ -2498,5 +2541,65 @@ button {
   /* Лента тем отделяется от карточек */
   .topics {
     padding-bottom: 10px;
+  }
+}
+
+/* ── 10. Телефон: модалка психолога должна показывать календарь целиком ── */
+@media (max-width: 700px) {
+  .overlay {
+    padding: 10px;
+  }
+  .modal {
+    max-height: calc(100dvh - 20px);
+  }
+  .modal__hero {
+    padding: 22px 52px 14px 16px;
+    gap: 12px;
+  }
+  .modal__hero .avatar--lg {
+    width: 46px;
+    height: 46px;
+  }
+  .modal__hero h2,
+  .modal__hero--plain h2 {
+    font-size: 19px;
+  }
+  .modal__hero-role {
+    font-size: 12px;
+  }
+  .modal__hero-meta {
+    margin-top: 8px;
+    gap: 6px;
+  }
+  .modal__body {
+    padding-inline: 16px;
+  }
+  .modal__footer {
+    padding: 10px 16px;
+    gap: 6px;
+  }
+  .section {
+    padding: 18px 0;
+  }
+  .cal__head {
+    margin-bottom: 8px;
+  }
+  .cal__week {
+    gap: 3px;
+    margin-bottom: 4px;
+  }
+  .cal__grid {
+    gap: 3px;
+  }
+  .cal__day {
+    gap: 0;
+    padding: 5px 1px 6px;
+  }
+  .cal__day span {
+    font-size: 13px;
+  }
+  .cal__day small,
+  .cal__day em {
+    font-size: 9px;
   }
 }

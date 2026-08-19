@@ -1,5 +1,4 @@
 import { Mark } from "./icons.jsx";
-import { money } from "../lib/format.js";
 
 /* Выбранный в попапе материал приходит в ленту как сообщение от InTreatment —
    дальше он покупается тем же путём, что и сессия. */
@@ -40,7 +39,6 @@ export default function ProductCard({ product, time, onBuy }) {
             <p className="rec__about product__for">{product.forWhom}</p>
           </div>
 
-          <span className="rec__price">{money(product.price)}</span>
         </div>
       </div>
 
