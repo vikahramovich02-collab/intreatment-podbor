@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Mark, CheckIcon, ArrowLeft } from "./icons.jsx";
 import SubscribeModal from "./SubscribeModal.jsx";
+import useScrollRail from "../lib/useScrollRail.js";
 
 const NONE_LABEL = "Ничего из этого";
 
@@ -32,12 +33,13 @@ export default function Composer({
     setTimeout(() => setFlash(false), 1200);
   };
   const [checked, setChecked] = useState([]);
-  /* Список вариантов длиннее экрана — показываем затухание снизу,
+  /* Список вариантов длиннее экрана: свой бегунок сбоку и затухание снизу,
      чтобы было видно, что его можно листать */
-  const listRef = useRef(null);
+  const { ref: listRef, rail, sync, nodeRef } = useScrollRail();
   const [more, setMore] = useState(false);
   const syncMore = () => {
-    const node = listRef.current;
+    sync();
+    const node = nodeRef.current;
     if (!node) return;
     setMore(node.scrollHeight - node.scrollTop - node.clientHeight > 6);
   };
@@ -135,6 +137,15 @@ export default function Composer({
         )}
 
         {options.length > 0 && (
+          <div className="scroller">
+            {rail && (
+              <span className="scroller__rail" aria-hidden="true">
+                <span
+                  className="scroller__thumb"
+                  style={{ height: `${rail.size}%`, top: `${rail.offset}%` }}
+                />
+              </span>
+            )}
           <div
             ref={listRef}
             className={`options ${options.length > 3 ? "" : "options--single"} ${
@@ -182,6 +193,7 @@ export default function Composer({
                 </button>
               );
             })}
+          </div>
           </div>
         )}
 

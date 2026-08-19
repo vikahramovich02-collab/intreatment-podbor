@@ -1019,24 +1019,15 @@ button {
   left: clamp(16px, 2.4vw, 44px);
   top: calc(var(--header-h) + 40px);
   width: 232px;
+  z-index: 10;
+}
+.topics__view {
   max-height: calc(100dvh - var(--header-h) - 120px);
   overflow-y: auto;
-  z-index: 10;
-  /* Бегунок держим видимым: иначе непонятно, что список листается */
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.22) transparent;
+  scrollbar-width: none;
 }
-.topics::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-  -webkit-appearance: none;
-}
-.topics::-webkit-scrollbar-thumb {
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.22);
-}
-.topics::-webkit-scrollbar-track {
-  background: transparent;
+.topics__view::-webkit-scrollbar {
+  display: none;
 }
 .topics__title {
   margin-bottom: 12px;
@@ -2324,16 +2315,12 @@ button {
     width: auto;
     max-height: none;
     padding: 10px var(--gutter) 6px;
+    display: block;
+  }
+  .topics__view {
+    max-height: none;
     overflow-x: auto;
     overflow-y: hidden;
-    display: block;
-    /* Лента листается вбок — бегунок оставляем на виду */
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.22) transparent;
-  }
-  .topics::-webkit-scrollbar {
-    height: 4px;
-    -webkit-appearance: none;
   }
   .topics__title {
     display: none;
@@ -2601,5 +2588,66 @@ button {
   .cal__day small,
   .cal__day em {
     font-size: 9px;
+  }
+}
+
+/* ── 11. Свой бегунок прокрутки ──────────────────────────────
+   Системный на macOS и iOS оверлейный: виден только во время скролла.
+   Рисуем маленький свой — тонкий, но заметный. */
+.scroller {
+  position: relative;
+}
+.scroller__rail {
+  display: block;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.07);
+  pointer-events: none;
+  z-index: 2;
+}
+.scroller__thumb {
+  display: block;
+  position: absolute;
+  left: 0;
+  width: 100%;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.3);
+}
+.scroller__rail--x {
+  top: auto;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: 3px;
+}
+.scroller__rail--x .scroller__thumb {
+  top: 0;
+  left: auto;
+  width: auto;
+  height: 100%;
+}
+
+/* Панель тем: бегунок живёт на самой панели, лента едет внутри.
+   На десктопе панель fixed, на телефоне делаем её точкой отсчёта отдельно. */
+.topics__rail {
+  right: -8px;
+}
+@media (max-width: 900px) {
+  .topics {
+    /* точка отсчёта для бегунка; смещения десктопной колонки сбрасываем */
+    position: relative;
+    top: auto;
+    left: auto;
+  }
+  /* Лента табов едет вбок — бегунок тонкой полоской под ней */
+  .topics__rail {
+    right: var(--gutter);
+    left: var(--gutter);
+    bottom: 0;
   }
 }
