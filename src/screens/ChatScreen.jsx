@@ -26,7 +26,6 @@ const ASK_SUB = "Что ближе к вашей ситуации?";
 const ASK_RECOGNIZE = "Что из этого про вас? Можно отметить или описать своими словами.";
 
 const DUTY = { signature: "Дежурный психолог Дарья" };
-const BACK_TO_CATEGORIES = { label: "Вернуться к темам", toCategories: true };
 const STEP_BACK = { label: "Шаг назад", stepBack: true };
 const NEXT_SPECIALIST = { label: "Показать другого специалиста", nextPerson: true };
 const BACK_TO_MATCHING = { label: "Вернуться к подбору", backToMatching: true };
@@ -242,7 +241,9 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
       return;
     }
     history.current.push(snapshotNow());
-    hear(option.label);
+    /* «Пропустить» — служебный выбор: в ленту его репликой не кладём,
+       просто переходим к следующему шагу */
+    if (!option.skip) hear(option.label);
 
     if (option.toCategories || option.newTopic) {
       goToCategories();
@@ -453,7 +454,6 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
       return {
         options: [],
         placeholder: "Расскажите..",
-        back: BACK_TO_CATEGORIES,
         stepBack: history.current.length > 0,
       };
     }
@@ -469,14 +469,12 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
       return {
         options: subcategoriesOf(category).map(([label, code]) => ({ label, vCode: code })),
         stepBack: history.current.length > 0,
-        back: BACK_TO_CATEGORIES,
       };
     }
     if (stage === "subsub") {
       return {
         options: subSubcategoriesOf(subLabel).map(([label, code]) => ({ label, vCode: code })),
         stepBack: history.current.length > 0,
-        back: BACK_TO_CATEGORIES,
       };
     }
     if (stage === "situation") {
@@ -491,14 +489,12 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
         submitLabel: "Узнаю себя в этих ситуациях",
         submitLabelShort: "Узнаю",
         placeholder: "Опишите свою ситуацию..",
-        back: BACK_TO_CATEGORIES,
         stepBack: history.current.length > 0,
       };
     }
     const hasMore = matches.length > 1;
     return {
       options: hasMore ? [NEXT_SPECIALIST, NEW_TOPIC] : [NEW_TOPIC],
-      back: BACK_TO_CATEGORIES,
       stepBack: history.current.length > 0,
     };
   })();

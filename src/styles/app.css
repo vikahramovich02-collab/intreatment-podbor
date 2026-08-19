@@ -1297,6 +1297,8 @@ button {
   position: relative;
   display: flex;
   flex-direction: column;
+  /* по центру экрана; при нехватке места аккуратно прижимается к краям */
+  margin: auto 0;
   width: 100%;
   max-width: 880px;
   max-height: calc(100dvh - 2 * clamp(16px, 4vh, 48px));
