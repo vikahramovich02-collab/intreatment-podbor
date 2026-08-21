@@ -82,14 +82,14 @@ export const WEEKDAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
 
 /* Календарь стандартной недельной сеткой: колонки пн—вс,
    отсчёт от понедельника текущей недели. Прошедшие дни показываем неактивными. */
-export function buildCalendar(person, weeks = 4) {
+export function buildCalendar(person, weeks = 4, offsetWeeks = 0) {
   const days = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const start = new Date(today);
   const shift = (today.getDay() + 6) % 7; // сколько дней прошло с понедельника
-  start.setDate(today.getDate() - shift);
+  start.setDate(today.getDate() - shift + offsetWeeks * 7);
 
   for (let i = 0; i < weeks * 7; i += 1) {
     const date = new Date(start);

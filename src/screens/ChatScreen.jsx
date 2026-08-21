@@ -29,10 +29,17 @@ const DUTY = { signature: "Дежурный психолог Дарья" };
 const STEP_BACK = { label: "Шаг назад", stepBack: true };
 const NEXT_SPECIALIST = { label: "Показать другого специалиста", nextPerson: true };
 const BACK_TO_MATCHING = { label: "Вернуться к подбору", backToMatching: true };
+const BACK_TO_CATEGORIES = { label: "Вернуться к темам", toCategories: true };
 const NEW_TOPIC = { label: "Обсудить другую тему", newTopic: true };
 
 /* Мок: разбор свободного текста возьмёт на себя агентская система, её пока нет.
    Поэтому на любое сообщение отвечаем одинаково — чтобы не ломать флоу. */
+/* Клиент не узнал себя в пунктах — зовём рассказать своими словами
+   и возвращаем меню предыдущего шага */
+const ALL_SHOWN =
+  "Это все специалисты, которые работают именно с выбранными запросами — других под эту тему у нас пока нет.\n\nРасскажите своими словами, что для вас важно, и я поищу точнее. Возможно, вы хотите обсудить другую тему.";
+const ASK_OWN_WORDS =
+  "Расскажите о своей ситуации или выберите то, что лучше её описывает.";
 const MOCK_REPLY =
   "Спасибо, что рассказали. Передала это дежурному психологу — он посмотрит ваш запрос и вернётся с подходящими специалистами.";
 
@@ -50,6 +57,8 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
   const [typing, setTyping] = useState(false);
   const [matches, setMatches] = useState([]);
   const [matchIndex, setMatchIndex] = useState(0);
+  /* Все подходящие показаны — дальше зовём рассказать своими словами */
+  const [matchesDone, setMatchesDone] = useState(false);
   const [modal, setModal] = useState(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [draft, setDraft] = useState(null);
@@ -92,9 +101,22 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
   }, [resetAt]);
 
   useEffect(() => {
-    threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight, behavior: "smooth" });
+    const thread = threadRef.current;
     // разговор пошёл дальше — прежняя карточка больше не «активная»
     setVisibleCard(null);
+    if (!thread) return;
+
+    /* Карточку специалиста показываем с её начала — с кружка и подводки,
+       иначе лента уезжает сразу к концу карточки */
+    const lastIndex = messages.length - 1;
+    const last = messages[lastIndex];
+    const node = nodeRefs.current[lastIndex];
+    if (node && (last?.role === "rec" || last?.role === "product")) {
+      const shift = node.getBoundingClientRect().top - thread.getBoundingClientRect().top;
+      thread.scrollTo({ top: thread.scrollTop + shift - 12, behavior: "smooth" });
+      return;
+    }
+    thread.scrollTo({ top: thread.scrollHeight, behavior: "smooth" });
   }, [messages.length, typing]);
 
   /* Запоминаем, на чём остановились в текущей теме */
@@ -103,11 +125,14 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
     setTopics((prev) =>
       prev.map((topic) =>
         topic.id === topicId
-          ? { ...topic, state: { stage, category, subLabel, vCode, matches, matchIndex } }
+          ? {
+              ...topic,
+              state: { stage, category, subLabel, vCode, matches, matchIndex, matchesDone },
+            }
           : topic
       )
     );
-  }, [topicId, stage, category, subLabel, vCode, matches, matchIndex]);
+  }, [topicId, stage, category, subLabel, vCode, matches, matchIndex, matchesDone]);
 
   const clearTimers = () => {
     timers.current.forEach(clearTimeout);
@@ -173,6 +198,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
     }
     setMatches(people);
     setMatchIndex(index);
+    setMatchesDone(false);
     setStage("matched");
     setTopics((prev) =>
       prev.map((topic) =>
@@ -288,7 +314,12 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
     }
 
     if (option.nextPerson) {
-      const next = (matchIndex + 1) % matches.length;
+      const next = matchIndex + 1;
+      if (next >= matches.length) {
+        setMatchesDone(true);
+        say(withName(ALL_SHOWN), { topicId });
+        return;
+      }
       setMatchIndex(next);
       setTopics((prev) =>
         prev.map((topic) =>
@@ -315,7 +346,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
 
     if (stage === "situation") {
       setStage("sub");
-      say(withName("Тогда посмотрим ещё раз: что ближе к вашей ситуации?"), { topicId });
+      say(withName(ASK_OWN_WORDS), { topicId });
       return;
     }
 
@@ -326,7 +357,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
     hear(labels.length ? labels.join("; ") : "Ничего из этого");
     if (!labels.length) {
       setStage("sub");
-      say(withName("Тогда посмотрим ещё раз: что ближе к вашей ситуации?"), { topicId });
+      say(withName(ASK_OWN_WORDS), { topicId });
       return;
     }
     showMatch(vCode);
@@ -403,6 +434,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
       setVCode(topic.state.vCode);
       setMatches(topic.state.matches || []);
       setMatchIndex(topic.state.matchIndex || 0);
+      setMatchesDone(Boolean(topic.state.matchesDone));
     }
     // ведём к карточке специалиста этой темы, а если её нет — к началу ветки
     let index = messages.reduce(
@@ -436,6 +468,8 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
         onClick: () => onBuyProduct(card.product),
       };
     }
+    /* Все показаны — на этом шаге зовём написать текстом, кнопку записи не навязываем */
+    if (matchesDone) return null;
     const person = card?.person || (stage === "matched" ? matches[matchIndex] : null);
     if (!person) return null;
     return {
@@ -454,6 +488,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
       return {
         options: [],
         placeholder: "Расскажите..",
+        back: BACK_TO_CATEGORIES,
         stepBack: history.current.length > 0,
       };
     }
@@ -469,12 +504,14 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
       return {
         options: subcategoriesOf(category).map(([label, code]) => ({ label, vCode: code })),
         stepBack: history.current.length > 0,
+        back: BACK_TO_CATEGORIES,
       };
     }
     if (stage === "subsub") {
       return {
         options: subSubcategoriesOf(subLabel).map(([label, code]) => ({ label, vCode: code })),
         stepBack: history.current.length > 0,
+        back: BACK_TO_CATEGORIES,
       };
     }
     if (stage === "situation") {
@@ -484,17 +521,24 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
         .map((line) => line.replace(/^[•\s]+/, "").trim())
         .filter(Boolean);
       return {
-        options: [...points.map((label) => ({ label })), { label: "Ничего из этого", none: true }],
+        options: [
+          { label: "Выбрать все", all: true },
+          ...points.map((label) => ({ label })),
+          { label: "Ничего из этого", none: true },
+        ],
         mode: "multi",
         submitLabel: "Узнаю себя в этих ситуациях",
         submitLabelShort: "Узнаю",
         placeholder: "Опишите свою ситуацию..",
+        back: BACK_TO_CATEGORIES,
         stepBack: history.current.length > 0,
       };
     }
-    const hasMore = matches.length > 1;
+    /* Кнопка живёт до последнего: на ней и приходит «это все, кто подходит» */
+    const hasMore = !matchesDone && matches.length > 1;
     return {
       options: hasMore ? [NEXT_SPECIALIST, NEW_TOPIC] : [NEW_TOPIC],
+      back: BACK_TO_CATEGORIES,
       stepBack: history.current.length > 0,
     };
   })();

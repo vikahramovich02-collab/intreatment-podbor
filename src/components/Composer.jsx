@@ -56,9 +56,15 @@ export default function Composer({
     requestAnimationFrame(syncMore);
   }, [options.map((option) => option.label).join("|")]);
 
-  /* «Ничего из этого» — взаимоисключающий пункт: снимает остальные и снимается сам */
+  /* Обычные пункты — всё, кроме «Выбрать все» и «Ничего из этого» */
+  const plain = options.filter((option) => !option.none && !option.all).map((o) => o.label);
+  const allPicked = plain.length > 0 && plain.every((label) => checked.includes(label));
+
+  /* «Ничего из этого» — взаимоисключающий пункт: снимает остальные и снимается сам.
+     «Выбрать все» отмечает разом весь список и так же разом снимает. */
   const toggle = (option) => {
-    const { label, none } = option;
+    const { label, none, all } = option;
+    if (all) return setChecked(allPicked ? [] : plain);
     setChecked((prev) => {
       if (prev.includes(label)) return prev.filter((item) => item !== label);
       if (none) return [label];
@@ -67,6 +73,8 @@ export default function Composer({
   };
 
   const blocked = disabled || (consent && !consent.checked);
+  /* Когда рядом есть «Вернуться к подбору», третью кнопку в строку не ставим */
+  const showBack = back && !navExtra;
   const canSend = Boolean(text.trim()) || (mode === "multi" && checked.length > 0);
 
   const submit = (event) => {
@@ -87,7 +95,7 @@ export default function Composer({
   return (
     <div className="composer">
       <div className="column composer__inner">
-        {(back || stepBack || navExtra) && (
+        {(showBack || stepBack || navExtra) && (
           <div className="composer__nav">
             {navExtra && (
               <button
@@ -111,7 +119,7 @@ export default function Composer({
                 Шаг назад
               </button>
             )}
-            {back && (
+            {showBack && (
               <button
                 className="composer__back"
                 type="button"
@@ -155,7 +163,7 @@ export default function Composer({
             onScroll={syncMore}
           >
             {options.map((option) => {
-              const isChecked = checked.includes(option.label);
+              const isChecked = option.all ? allPicked : checked.includes(option.label);
               return (
                 <button
                   key={option.label}
@@ -218,14 +226,7 @@ export default function Composer({
             aria-disabled={blocked}
           >
             <Mark />
-            {mode === "multi" && checked.length ? (
-              <>
-                <span className="is-wide">{submitLabel}</span>
-                <span className="is-narrow">{submitLabelShort || submitLabel}</span>
-              </>
-            ) : (
-              "Отправить"
-            )}
+"Отправить"
           </button>
         </form>
 

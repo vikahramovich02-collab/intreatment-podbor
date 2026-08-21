@@ -736,20 +736,11 @@ button {
   padding-right: 8px;
   overflow-y: auto;
   overscroll-behavior: contain;
-  /* Список листается — бегунок держим видимым, иначе непонятно, что есть продолжение */
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.22) transparent;
+  /* Бегунок рисуем свой (см. .scroller) — системный прячем, чтобы на iOS не было двух */
+  scrollbar-width: none;
 }
 .options::-webkit-scrollbar {
-  width: 6px;
-  -webkit-appearance: none;
-}
-.options::-webkit-scrollbar-thumb {
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.22);
-}
-.options::-webkit-scrollbar-track {
-  background: transparent;
+  display: none;
 }
 /* Пока список не долистан до конца — нижний край мягко тает */
 .options.has-more {
@@ -1441,10 +1432,16 @@ button {
 
 .cal__head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
+}
+/* Стрелки листают календарь на четыре недели вперёд и назад */
+.cal__pager {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
 }
 .cal__zone {
   font-size: 13px;
@@ -2649,5 +2646,19 @@ button {
     right: var(--gutter);
     left: var(--gutter);
     bottom: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .cal__head {
+    flex-wrap: wrap;
+  }
+  .cal__zone {
+    order: 3;
+    width: 100%;
+  }
+  .cal__nav {
+    width: 28px;
+    height: 28px;
   }
 }

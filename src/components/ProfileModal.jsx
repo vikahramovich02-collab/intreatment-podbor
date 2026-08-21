@@ -14,6 +14,8 @@ import {
   shiftSlot,
 } from "../lib/format.js";
 
+const MAX_PAGE = 5; // полгода вперёд — дальше записываться смысла нет
+
 export default function ProfileModal({ person, onClose, onChoose, onNext, focus }) {
   const panelRef = useRef(null);
   const closeRef = useRef(null);
@@ -23,14 +25,17 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
   const [zone, setZone] = useState(ZONES.find((item) => item.id === "ru3"));
   const [zoneOpen, setZoneOpen] = useState(false);
 
+  /* Календарь показывает 4 недели за раз — дальше листаем стрелками:
+     у психолога может быть отпуск или свободные окна только через месяц */
+  const [page, setPage] = useState(0);
   const days = useMemo(() => {
-    const base = buildCalendar(person, 4);
+    const base = buildCalendar(person, 4, page * 4);
     if (zone.utc === BASE_UTC) return base;
     return base.map((day) => ({
       ...day,
       slots: day.slots.map((slot) => shiftSlot(slot, zone.utc)).filter(Boolean),
     }));
-  }, [person.id, zone.utc]);
+  }, [person.id, zone.utc, page]);
   const visibleDays = days;
 
   const firstFree = Math.max(0, days.findIndex((day) => day.slots.length));
@@ -44,6 +49,10 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
 
   useEffect(() => {
     setDayIndex(firstFree);
+  }, [person.id, page]);
+
+  useEffect(() => {
+    setPage(0);
   }, [person.id]);
 
   /* Фокус, блокировка скролла страницы, возврат фокуса при закрытии */
@@ -150,11 +159,6 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
               <a className="link" href="#diplomas">
                 Документы об образовании
               </a>
-              {person.profileUrl && (
-                <a className="link" href={person.profileUrl} target="_blank" rel="noreferrer">
-                  Профиль на Teletype
-                </a>
-              )}
             </p>
           </section>
 
@@ -163,6 +167,26 @@ export default function ProfileModal({ person, onClose, onChoose, onNext, focus 
             <div className="cal__head">
               <strong>{weekRange(days)}</strong>
               <span className="cal__zone">Время в поясе {zoneShort(zone)}</span>
+              <span className="cal__pager">
+                <button
+                  type="button"
+                  className="cal__nav"
+                  disabled={page === 0}
+                  aria-label="Предыдущие четыре недели"
+                  onClick={() => setPage((value) => Math.max(0, value - 1))}
+                >
+                  <ChevronLeft />
+                </button>
+                <button
+                  type="button"
+                  className="cal__nav"
+                  disabled={page >= MAX_PAGE}
+                  aria-label="Следующие четыре недели"
+                  onClick={() => setPage((value) => Math.min(MAX_PAGE, value + 1))}
+                >
+                  <ChevronRight />
+                </button>
+              </span>
             </div>
 
             {vacation && (
