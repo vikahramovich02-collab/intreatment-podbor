@@ -145,6 +145,17 @@ export function vacationLabel(person) {
   return `${until.getDate()} ${MONTHS[until.getMonth()]}`;
 }
 
+/* Короткая подпись для телефона: «ср, 26 авг» вместо «среда, 26 августа» */
+export function nearestSlotShort(person) {
+  const label = nearestSlotLabel(person);
+  if (!label) return null;
+  return label
+    .replace(/^(\S+),/, (match, word) => `${word.slice(0, 2)},`)
+    .replace(/(январ|феврал|март|апрел|ма|июн|июл|август|сентябр|октябр|ноябр|декабр)\S*/i, (m) =>
+      m.slice(0, 3)
+    );
+}
+
 export function nearestSlotLabel(person) {
   const days = buildCalendar(person, 4).filter((item) => !item.past);
   const day = days.find((item) => item.slots.length);

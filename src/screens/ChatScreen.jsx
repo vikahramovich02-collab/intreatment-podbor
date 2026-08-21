@@ -379,9 +379,12 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
       return;
     }
 
+    /* Человек описал ситуацию словами — заводим тему «Свой запрос»,
+       пока алгоритм не отнесёт её к какой-то категории */
+    const thread = topicId || openTopic("Свой запрос");
     // Один и тот же ответ на любой текст — до подключения агентской системы
     setStage("duty");
-    say(withName(MOCK_REPLY), { topicId, ...DUTY });
+    say(withName(MOCK_REPLY), { topicId: thread, ...DUTY });
   };
 
   /* ── Редактирование ответа ── */
@@ -464,7 +467,7 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
     const card = activeCard;
     if (card?.role === "product") {
       return {
-        label: `Забрать за ${money(card.product.price)}`,
+        label: `Купить за ${money(card.product.price)}`,
         onClick: () => onBuyProduct(card.product),
       };
     }
@@ -533,6 +536,10 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
         back: BACK_TO_CATEGORIES,
         stepBack: history.current.length > 0,
       };
+    }
+    /* На карточке материала свой набор: купить или вернуться к подбору */
+    if (activeCard?.role === "product") {
+      return { options: [], back: BACK_TO_CATEGORIES };
     }
     /* Кнопка живёт до последнего: на ней и приходит «это все, кто подходит» */
     const hasMore = !matchesDone && matches.length > 1;

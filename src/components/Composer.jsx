@@ -93,7 +93,7 @@ export default function Composer({
   };
 
   return (
-    <div className="composer">
+    <div className={`composer ${primaryAction ? "composer--card" : ""}`.trim()}>
       <div className="column composer__inner">
         {(showBack || stepBack || navExtra) && (
           <div className="composer__nav">
@@ -226,7 +226,7 @@ export default function Composer({
             aria-disabled={blocked}
           >
             <Mark />
-"Отправить"
+            Отправить
           </button>
         </form>
 

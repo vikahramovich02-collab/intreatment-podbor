@@ -766,8 +766,10 @@ button {
   background: var(--paper);
   transition: background 0.16s var(--ease), border-color 0.16s var(--ease);
 }
-.option:hover {
-  background: var(--picked-bg);
+@media (hover: hover) {
+  .option:hover {
+    background: var(--picked-bg);
+  }
 }
 .option.is-checked {
   background: var(--picked-bg);
@@ -1271,6 +1273,52 @@ button {
 .rec__circle--video.is-playing:hover .rec__play {
   opacity: 1;
 }
+/* Видео-кружок: кольцо прогресса и таймер, как в телеграме */
+.rec__video {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.rec__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+  touch-action: none;
+}
+.rec__ring circle {
+  fill: none;
+}
+.rec__ring-track {
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 2.5;
+}
+.rec__ring-line {
+  stroke: #fff;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.rec__ring-hit {
+  stroke: transparent;
+  stroke-width: 12;
+  pointer-events: stroke;
+  cursor: grab;
+}
+.rec__timer {
+  position: absolute;
+  bottom: 8px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: rgba(24, 22, 22, 0.6);
+  color: #fff;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
 .rec__videohint {
   margin-top: -12px;
   font-size: 12px;
@@ -1461,8 +1509,10 @@ button {
   color: var(--ink-soft);
   transition: background 0.16s var(--ease);
 }
-.cal__nav:hover:not([disabled]) {
-  background: var(--picked-bg);
+@media (hover: hover) {
+  .cal__nav:hover:not([disabled]) {
+    background: var(--picked-bg);
+  }
 }
 .cal__nav[disabled] {
   opacity: 0.35;
@@ -1510,8 +1560,11 @@ button {
   font-size: 10px;
   color: var(--ghost);
 }
-.cal__day:hover:not([disabled]) {
-  background: var(--picked-bg);
+/* На тачах hover «залипает» после тапа и перебивал выбранный день */
+@media (hover: hover) {
+  .cal__day:hover:not([disabled]) {
+    background: var(--picked-bg);
+  }
 }
 .cal__day.is-selected {
   background: var(--btn-primary);
@@ -2660,5 +2713,102 @@ button {
   .cal__nav {
     width: 28px;
     height: 28px;
+  }
+}
+
+/* ── 12. Телефон: карточка специалиста должна помещаться в экран целиком ── */
+@media (max-width: 700px) {
+  .chat__thread {
+    padding-block: 14px 4px;
+  }
+  .chat__thread-inner {
+    gap: 20px;
+  }
+  .rec__circle {
+    width: 88px;
+    height: 88px;
+  }
+  .msg__head-avatar {
+    width: 28px;
+    height: 28px;
+  }
+  .msg__head-name {
+    font-size: 13px;
+  }
+  .msg__head {
+    gap: 8px;
+  }
+  /* Карточка должна помещаться в экран целиком: шапку сообщения у неё прячем,
+     плашки ставим в ряд, рассказ показываем началом */
+  .rec .msg__head {
+    display: none;
+  }
+  .rec__meta {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .rec__price {
+    font-size: 11px;
+    padding: 5px 9px;
+  }
+  .option {
+    min-height: 36px;
+    padding: 7px 12px;
+  }
+  .subscribe__open {
+    font-size: 11px;
+  }
+  /* Пока в ленте карточка, отдаём её высоте всё место — подписка вернётся на следующем шаге */
+  .composer--card .subscribe {
+    display: none;
+  }
+  /* Подпись под кружком лишняя — и так видно, что это видео */
+  .rec__videohint {
+    display: none;
+  }
+  /* В ленте показываем начало рассказа, целиком — в профиле */
+  .rec__about {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .rec__col {
+    gap: 8px;
+  }
+  /* На телефоне карточка открывается тапом целиком — отдельная ссылка не нужна */
+  .rec__more {
+    display: none;
+  }
+  .rec__meta {
+    gap: 6px;
+  }
+  .rec__play {
+    width: 40px;
+    height: 40px;
+  }
+  .rec__play svg {
+    width: 18px;
+    height: 18px;
+  }
+  .rec__videohint {
+    margin-top: -6px;
+    font-size: 11px;
+  }
+  .rec__lead {
+    margin-bottom: -6px;
+  }
+  .rec__card {
+    min-height: 0;
+    gap: 12px;
+    padding: 14px;
+  }
+  .rec__about {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .rec__price {
+    font-size: 12px;
+    padding: 6px 10px;
   }
 }
