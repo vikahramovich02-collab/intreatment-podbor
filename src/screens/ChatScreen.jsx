@@ -483,6 +483,10 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
 
   /* ── Что показываем в композере ── */
   const composer = (() => {
+    /* На карточке материала свой набор: купить или вернуться к подбору */
+    if (activeCard?.role === "product") {
+      return { options: [], back: BACK_TO_CATEGORIES };
+    }
     if (stage === "name") {
       return { options: [{ label: "Пропустить", skip: true }], placeholder: "Ваше имя.." };
     }
@@ -536,10 +540,6 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
         back: BACK_TO_CATEGORIES,
         stepBack: history.current.length > 0,
       };
-    }
-    /* На карточке материала свой набор: купить или вернуться к подбору */
-    if (activeCard?.role === "product") {
-      return { options: [], back: BACK_TO_CATEGORIES };
     }
     /* Кнопка живёт до последнего: на ней и приходит «это все, кто подходит» */
     const hasMore = !matchesDone && matches.length > 1;
