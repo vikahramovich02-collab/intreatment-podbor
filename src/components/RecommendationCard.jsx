@@ -1,33 +1,58 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Mark } from "./icons.jsx";
 import { money, nearestSlotLabel, nearestSlotShort } from "../lib/format.js";
 
-/* Видео-визитка психолога: кружок как в телеграме — фото до запуска,
-   по клику пауза и продолжение, кольцо показывает прогресс,
-   а перетаскиванием по кольцу запись можно перемотать. */
+/* Видео-визитка психолога — паттерн телеграмного кружка:
+   в ленте играет сама и без звука, время подписью сбоку;
+   по тапу разворачивается на весь экран со звуком, кольцом прогресса
+   и перемоткой перетаскиванием по кольцу. */
 function VideoCircle({ person }) {
-  const videoRef = useRef(null);
+  const smallRef = useRef(null);
+  const bigRef = useRef(null);
   const ringRef = useRef(null);
+  const [open, setOpen] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [scrubbing, setScrubbing] = useState(false);
 
+  /* Одновременно в ленте играет только один кружок */
+  function stopOthers(current) {
+    document.querySelectorAll(".rec__circle--video video").forEach((other) => {
+      if (other !== current) other.pause();
+    });
+  }
 
-  /* Карточка только что пришла в ленту — визитка запускается сама.
-     Если браузер запретит (бывает на iOS), останется постер с кнопкой. */
+  /* Карточка пришла в ленту — визитка стартует сама. Без звука:
+     так браузеры разрешают автозапуск, звук включается при развороте. */
   useEffect(() => {
-    const node = videoRef.current;
+    const node = smallRef.current;
     if (!node) return;
     stopOthers(node);
-    const started = node.play();
-    if (started?.then) {
-      started.then(() => setPlaying(true)).catch(() => setPlaying(false));
-    } else {
-      setPlaying(true);
-    }
+    node.play().catch(() => {});
   }, []);
+
+  /* Развернули — продолжаем с того же места, уже со звуком */
+  useEffect(() => {
+    if (!open) return undefined;
+    const small = smallRef.current;
+    const big = bigRef.current;
+    if (big && small) {
+      big.currentTime = small.currentTime;
+      small.pause();
+      big.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+    }
+    const onKey = (event) => event.key === "Escape" && close();
+    document.addEventListener("keydown", onKey);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [open]);
 
   if (!person.video) {
     return (
@@ -37,11 +62,21 @@ function VideoCircle({ person }) {
     );
   }
 
+  const close = () => {
+    const small = smallRef.current;
+    const big = bigRef.current;
+    if (small && big) {
+      small.currentTime = big.currentTime;
+      small.play().catch(() => {});
+    }
+    setOpen(false);
+    setPlaying(false);
+  };
+
   const toggle = () => {
-    const node = videoRef.current;
+    const node = bigRef.current;
     if (!node) return;
     if (node.paused) {
-      stopOthers(node);
       node.play();
       setPlaying(true);
     } else {
@@ -50,16 +85,9 @@ function VideoCircle({ person }) {
     }
   };
 
-  /* Одновременно в ленте играет только один кружок */
-  function stopOthers(current) {
-    document.querySelectorAll(".rec__circle--video video").forEach((other) => {
-      if (other !== current) other.pause();
-    });
-  }
-
   /* Позицию берём по углу от центра кольца: 12 часов — начало записи */
   const seekTo = (event) => {
-    const node = videoRef.current;
+    const node = bigRef.current;
     const ring = ringRef.current;
     if (!node || !ring || !node.duration) return;
     const box = ring.getBoundingClientRect();
@@ -72,9 +100,9 @@ function VideoCircle({ person }) {
     setTime(node.currentTime);
   };
 
-  const onTime = () => {
-    const node = videoRef.current;
-    if (!node || !node.duration) return;
+  const onTime = (event) => {
+    const node = event.currentTarget;
+    if (!node.duration) return;
     setTime(node.currentTime);
     if (!scrubbing) setProgress(node.currentTime / node.duration);
   };
@@ -90,83 +118,146 @@ function VideoCircle({ person }) {
   return (
     <span className="rec__video">
       <span
-        className={`rec__circle rec__circle--video ${playing ? "is-playing" : ""}`.trim()}
+        className="rec__circle rec__circle--video"
         role="button"
         tabIndex={0}
-        aria-label={playing ? "Пауза" : `Смотреть видео-визитку: ${person.name}`}
-        onClick={toggle}
+        aria-label={`Смотреть видео-визитку: ${person.name}`}
+        onClick={() => setOpen(true)}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
-            toggle();
+            setOpen(true);
           }
         }}
       >
         <video
-          ref={videoRef}
+          ref={smallRef}
           src={person.video}
           poster={person.photo}
           playsInline
+          muted
           preload="metadata"
-          onTimeUpdate={onTime}
+          onTimeUpdate={(event) => !open && setTime(event.currentTarget.currentTime)}
           onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
-          onEnded={() => {
-            setPlaying(false);
-            setProgress(0);
+          onEnded={(event) => {
+            event.currentTarget.currentTime = 0;
             setTime(0);
           }}
         />
-
-        {/* Кольцо прогресса: по нему же и перематываем */}
-        <svg
-          className="rec__ring"
-          viewBox="0 0 100 100"
-          ref={ringRef}
-          onPointerDown={(event) => {
-            event.stopPropagation();
-            event.currentTarget.setPointerCapture(event.pointerId);
-            setScrubbing(true);
-            seekTo(event);
-          }}
-          onPointerMove={(event) => scrubbing && seekTo(event)}
-          onPointerUp={(event) => {
-            event.stopPropagation();
-            setScrubbing(false);
-          }}
-          onClick={(event) => event.stopPropagation()}
-        >
-          <circle className="rec__ring-track" cx="50" cy="50" r={R} />
-          {/* Невидимая широкая полоса — за неё удобно хвататься пальцем */}
-          <circle className="rec__ring-hit" cx="50" cy="50" r={R} />
-          <circle
-            className="rec__ring-line"
-            cx="50"
-            cy="50"
-            r={R}
-            style={{ strokeDasharray: ring, strokeDashoffset: ring * (1 - progress) }}
-          />
-        </svg>
-
-        {(playing || time > 0) && (
-          <span className="rec__timer">
-            {clock(time)} / {clock(duration)}
-          </span>
-        )}
-
-        <span className="rec__play" aria-hidden="true">
-          {playing ? (
-            <svg viewBox="0 0 24 24">
-              <rect x="8" y="7" width="3" height="10" rx="1" fill="currentColor" />
-              <rect x="13" y="7" width="3" height="10" rx="1" fill="currentColor" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24">
-              <path d="M9 6.5l9 5.5-9 5.5z" fill="currentColor" />
-            </svg>
-          )}
+        <span className="rec__mute" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M4 9.5h3l4-3.2v11.4l-4-3.2H4z"
+              fill="currentColor"
+            />
+            <path
+              d="M15 9.5l4 5M19 9.5l-4 5"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              fill="none"
+            />
+          </svg>
         </span>
       </span>
 
+      {/* Подпись со временем — сбоку от кружка, как в телеграме */}
+      <span className="rec__timer">{clock(time)}</span>
+
+      {/* Разворот живёт в body: внутри ленты сообщений fixed «прилипает» к её боксу */}
+      {open &&
+        createPortal(
+          <div className="videoview" role="dialog" aria-label={`Видео-визитка: ${person.name}`}>
+          <button className="videoview__scrim" type="button" aria-label="Закрыть" onClick={close} />
+
+          <div className="videoview__stage">
+            <span
+              className="videoview__circle"
+              role="button"
+              tabIndex={0}
+              aria-label={playing ? "Пауза" : "Смотреть"}
+              onClick={toggle}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  toggle();
+                }
+              }}
+            >
+              <video
+                ref={bigRef}
+                src={person.video}
+                poster={person.photo}
+                playsInline
+                preload="metadata"
+                onTimeUpdate={onTime}
+                onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
+                onEnded={() => {
+                  setPlaying(false);
+                  setProgress(0);
+                }}
+              />
+
+              {/* Кольцо прогресса: по нему же и перематываем */}
+              <svg
+                className="videoview__ring"
+                viewBox="0 0 100 100"
+                ref={ringRef}
+                onPointerDown={(event) => {
+                  event.stopPropagation();
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                  setScrubbing(true);
+                  seekTo(event);
+                }}
+                onPointerMove={(event) => scrubbing && seekTo(event)}
+                onPointerUp={(event) => {
+                  event.stopPropagation();
+                  setScrubbing(false);
+                }}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <circle className="rec__ring-track" cx="50" cy="50" r={R} />
+                <circle className="rec__ring-hit" cx="50" cy="50" r={R} />
+                <circle
+                  className="rec__ring-line"
+                  cx="50"
+                  cy="50"
+                  r={R}
+                  style={{ strokeDasharray: ring, strokeDashoffset: ring * (1 - progress) }}
+                />
+              </svg>
+
+              {!playing && (
+                <span className="rec__play" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M9 6.5l9 5.5-9 5.5z" fill="currentColor" />
+                  </svg>
+                </span>
+              )}
+            </span>
+
+            <div className="videoview__bar">
+              <span className="videoview__time">
+                {clock(time)} / {clock(duration)}
+              </span>
+              <span className="videoview__name">{person.name}</span>
+            </div>
+          </div>
+
+            <button className="videoview__close" type="button" onClick={close} aria-label="Закрыть">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M6 6l12 12M18 6L6 18"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+              </svg>
+            </button>
+          </div>,
+          document.body
+        )}
     </span>
   );
 }
