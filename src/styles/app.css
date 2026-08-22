@@ -626,7 +626,8 @@ button {
   margin-bottom: 12px;
 }
 .msg__head-avatar .mark {
-  transform: scale(0.78);
+  width: 20px;
+  height: 11px;
 }
 .msg__head-avatar {
   display: grid;
@@ -2728,12 +2729,16 @@ button {
     gap: 16px;
   }
   .rec__circle {
-    width: 104px;
-    height: 104px;
+    width: 116px;
+    height: 116px;
   }
   .msg__head-avatar {
     width: 28px;
     height: 28px;
+  }
+  .msg__head-avatar .mark {
+    width: 14px;
+    height: 8px;
   }
   .msg__head-name {
     font-size: 13px;
@@ -2799,12 +2804,13 @@ button {
     font-size: 11px;
   }
   .rec__lead {
-    margin-bottom: -6px;
+    margin-bottom: -8px;
+    font-size: 14px;
   }
   .rec__card {
     min-height: 0;
-    gap: 10px;
-    padding: 12px;
+    gap: 8px;
+    padding: 11px 12px;
   }
   .rec__about {
     font-size: 14px;
