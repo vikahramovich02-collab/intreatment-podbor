@@ -113,7 +113,10 @@ export default function ChatScreen({ onBook, onBuyProduct, onLogin, onCrisis, on
     const node = nodeRefs.current[lastIndex];
     if (node && (last?.role === "rec" || last?.role === "product")) {
       const shift = node.getBoundingClientRect().top - thread.getBoundingClientRect().top;
-      thread.scrollTo({ top: thread.scrollTop + shift - 12, behavior: "smooth" });
+      /* Высокую карточку прижимаем так, чтобы её низ тоже попал в кадр */
+      const room = thread.clientHeight - node.getBoundingClientRect().height;
+      const gap = Math.max(2, Math.min(12, room - 4));
+      thread.scrollTo({ top: thread.scrollTop + shift - gap, behavior: "smooth" });
       return;
     }
     thread.scrollTo({ top: thread.scrollHeight, behavior: "smooth" });

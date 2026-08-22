@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Mark } from "./icons.jsx";
 import { money, nearestSlotLabel, nearestSlotShort } from "../lib/format.js";
 
@@ -14,6 +14,21 @@ function VideoCircle({ person }) {
   const [duration, setDuration] = useState(0);
   const [scrubbing, setScrubbing] = useState(false);
 
+
+  /* Карточка только что пришла в ленту — визитка запускается сама.
+     Если браузер запретит (бывает на iOS), останется постер с кнопкой. */
+  useEffect(() => {
+    const node = videoRef.current;
+    if (!node) return;
+    stopOthers(node);
+    const started = node.play();
+    if (started?.then) {
+      started.then(() => setPlaying(true)).catch(() => setPlaying(false));
+    } else {
+      setPlaying(true);
+    }
+  }, []);
+
   if (!person.video) {
     return (
       <span className="rec__circle">
@@ -26,6 +41,7 @@ function VideoCircle({ person }) {
     const node = videoRef.current;
     if (!node) return;
     if (node.paused) {
+      stopOthers(node);
       node.play();
       setPlaying(true);
     } else {
@@ -33,6 +49,13 @@ function VideoCircle({ person }) {
       setPlaying(false);
     }
   };
+
+  /* Одновременно в ленте играет только один кружок */
+  function stopOthers(current) {
+    document.querySelectorAll(".rec__circle--video video").forEach((other) => {
+      if (other !== current) other.pause();
+    });
+  }
 
   /* Позицию берём по углу от центра кольца: 12 часов — начало записи */
   const seekTo = (event) => {

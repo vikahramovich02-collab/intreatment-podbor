@@ -625,6 +625,9 @@ button {
   gap: 16px;
   margin-bottom: 12px;
 }
+.msg__head-avatar .mark {
+  transform: scale(0.78);
+}
 .msg__head-avatar {
   display: grid;
   place-items: center;
@@ -2722,11 +2725,11 @@ button {
     padding-block: 14px 4px;
   }
   .chat__thread-inner {
-    gap: 20px;
+    gap: 16px;
   }
   .rec__circle {
-    width: 88px;
-    height: 88px;
+    width: 104px;
+    height: 104px;
   }
   .msg__head-avatar {
     width: 28px;
@@ -2800,8 +2803,8 @@ button {
   }
   .rec__card {
     min-height: 0;
-    gap: 12px;
-    padding: 14px;
+    gap: 10px;
+    padding: 12px;
   }
   .rec__about {
     font-size: 14px;
