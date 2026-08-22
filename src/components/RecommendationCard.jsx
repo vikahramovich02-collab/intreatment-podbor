@@ -133,7 +133,7 @@ function VideoCircle({ person }) {
         <video
           ref={smallRef}
           src={person.video}
-          poster={person.photo}
+          poster={person.poster || person.photo}
           playsInline
           muted
           preload="metadata"
@@ -187,7 +187,7 @@ function VideoCircle({ person }) {
               <video
                 ref={bigRef}
                 src={person.video}
-                poster={person.photo}
+                poster={person.poster || person.photo}
                 playsInline
                 preload="metadata"
                 onTimeUpdate={onTime}
