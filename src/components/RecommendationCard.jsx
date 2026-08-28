@@ -280,7 +280,6 @@ export default function RecommendationCard({ person, lead, onOpen, time }) {
       {lead && <p className="msg__body rec__lead">{lead}</p>}
 
       <VideoCircle person={person} />
-      {person.video && <p className="rec__videohint">Видео-визитка · 30 секунд</p>}
 
       {/* Карточка по макету: имя сверху, снизу описание со ссылкой и плашки справа.
           Нажать можно на всю карточку целиком — откроется профиль */
@@ -303,31 +302,33 @@ export default function RecommendationCard({ person, lead, onOpen, time }) {
           <span className="rec__role">{person.role}</span>
         </div>
 
+        {/* Рассказ о себе идёт на всю ширину карточки, под ним — ссылка и плашки */}
         <div className="rec__bottom">
-          <div className="rec__col">
-            <p className="rec__about">{person.about}</p>
+          <p className="rec__about">{person.about}</p>
+
+          <div className="rec__foot">
             <button className="rec__more" type="button" onClick={() => onOpen(person, "about")}>
               Подробнее о психологе
             </button>
-          </div>
 
-          <div className="rec__meta">
-            <span className="rec__price">{money(person.price)} • 1 час</span>
-            {nearest ? (
-              <button
-                type="button"
-                className="rec__price rec__price--action"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onOpen(person, "schedule");
-                }}
-              >
-                <span className="is-wide">Ближайшая запись: {nearest}</span>
-                <span className="is-narrow">Ближайшая: {nearestShort}</span>
-              </button>
-            ) : (
-              <span className="rec__price">Ближайших дат нет</span>
-            )}
+            <div className="rec__meta">
+              <span className="rec__price">{money(person.price)} • 1 час</span>
+              {nearest ? (
+                <button
+                  type="button"
+                  className="rec__price rec__price--action"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onOpen(person, "schedule");
+                  }}
+                >
+                  <span className="is-wide">Ближайшая запись: {nearest}</span>
+                  <span className="is-narrow">Ближайшая: {nearestShort}</span>
+                </button>
+              ) : (
+                <span className="rec__price">Ближайших дат нет</span>
+              )}
+            </div>
           </div>
         </div>
       </div>

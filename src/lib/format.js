@@ -149,11 +149,12 @@ export function vacationLabel(person) {
 export function nearestSlotShort(person) {
   const label = nearestSlotLabel(person);
   if (!label) return null;
-  return label
-    .replace(/^(\S+),/, (match, word) => `${word.slice(0, 2)},`)
-    .replace(/(январ|феврал|март|апрел|ма|июн|июл|август|сентябр|октябр|ноябр|декабр)\S*/i, (m) =>
-      m.slice(0, 3)
-    );
+  /* На узком экране сокращаем только месяц: «сегодня, 25 авг».
+     День («сегодня», «завтра») режется в нечитаемое «се» — оставляем целиком. */
+  return label.replace(
+    /(январ|феврал|март|апрел|ма|июн|июл|август|сентябр|октябр|ноябр|декабр)\S*/i,
+    (m) => m.slice(0, 3)
+  );
 }
 
 export function nearestSlotLabel(person) {

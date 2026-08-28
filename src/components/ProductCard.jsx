@@ -34,11 +34,8 @@ export default function ProductCard({ product, time, onBuy }) {
         </div>
 
         <div className="rec__bottom">
-          <div className="rec__col">
-            <p className="rec__about">{product.about}</p>
-            <p className="rec__about product__for">{product.forWhom}</p>
-          </div>
-
+          <p className="rec__about">{product.about}</p>
+          <p className="rec__about rec__about--second">{product.forWhom}</p>
         </div>
       </div>
 
